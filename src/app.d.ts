@@ -1,12 +1,18 @@
-// See https://svelte.dev/docs/kit/types#app.d.ts
-// for information about these interfaces
+import type {
+	GameWithStats,
+	PlayerResult,
+	PlayerIdentity,
+	PlayerCumulativePoint
+} from '$lib/data/types.js';
+
 declare global {
 	namespace App {
-		// interface Error {}
-		// interface Locals {}
-		// interface PageData {}
-		// interface PageState {}
-		// interface Platform {}
+		interface PageData {
+			games: GameWithStats[];
+			identities: PlayerIdentity[];
+			aggregateStats: Record<string, PlayerResult>;
+			playerTimelines: PlayerCumulativePoint[];
+		}
 	}
 }
 
