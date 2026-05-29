@@ -166,15 +166,18 @@ export function buildPlayerTimeline(games: GameWithStats[], playerId: string): C
 	const sorted = [...games].sort((a, b) => a.startTime - b.startTime);
 
 	for (const gameStats of sorted) {
-		let gamePnl = 0;
 		for (const handStats of gameStats.handStats) {
 			const pstats = handStats.playerStats.get(playerId);
 			if (pstats) {
-				gamePnl += pstats.net;
+				cumulative += pstats.net;
 			}
+			points.push({
+				x: points.length + 1,
+				y: cumulative,
+				gameDate: gameStats.startTime,
+				handNumberWithinGame: parseInt(handStats.hand.number)
+			});
 		}
-		cumulative += gamePnl;
-		points.push({ x: gameStats.startTime, y: cumulative });
 	}
 
 	return points;

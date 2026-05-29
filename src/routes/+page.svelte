@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { LineChart } from 'layerchart';
+	import { LineChart, getChartContext } from 'layerchart';
 	import { ChartContainer, ChartTooltip, type ChartConfig } from '$lib/components/ui/chart';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
@@ -29,9 +29,14 @@
 		const timelines = $page.data.playerTimelines;
 		if (timelines.length === 0) return [];
 		const maxPoints = Math.max(...timelines.map((p) => p.points.length));
-		const result: Record<string, string | number>[] = [];
+		const result: Record<string, unknown>[] = [];
 		for (let i = 0; i < maxPoints; i++) {
-			const row: Record<string, string | number> = { session: `Session ${i + 1}` };
+			const point = timelines.find((t) => t.points[i] !== undefined)?.points[i];
+			const row: Record<string, unknown> = {
+				hand: i + 1,
+				gameDate: point?.gameDate ?? '',
+				handNumberWithinGame: point?.handNumberWithinGame ?? ''
+			};
 			for (const timeline of timelines) {
 				row[timeline.playerName] = timeline.points[i]?.y ?? 0;
 			}
@@ -39,6 +44,15 @@
 		}
 		return result;
 	});
+
+	function formatHandLabel(value: unknown) {
+		const ctx = getChartContext();
+		const data = ctx.tooltip.data as Record<string, unknown> | undefined;
+		if (data?.gameDate && data?.handNumberWithinGame) {
+			return `${new Date(data.gameDate as number).toLocaleDateString()} - Hand ${data.handNumberWithinGame}`;
+		}
+		return `${value}`;
+	}
 
 	let series = $derived(
 		$page.data.identities.map((identity) => ({
@@ -125,9 +139,9 @@
 <div>
 	<h2 class="mb-3 text-lg font-semibold">Cumulative Profit Over Time</h2>
 	<ChartContainer config={chartConfig} class="aspect-auto h-80 w-full">
-		<LineChart data={chartData} {series} x="session">
+		<LineChart data={chartData} {series} x="hand" props={{ xAxis: { tickLabelProps: { style: 'display: none' } } }}>
 			{#snippet tooltip()}
-				<ChartTooltip />
+				<ChartTooltip labelFormatter={formatHandLabel} />
 			{/snippet}
 		</LineChart>
 	</ChartContainer>

@@ -61,6 +61,8 @@ export interface SessionResult {
 export interface ChartPoint {
 	x: string | number;
 	y: number;
+	gameDate?: number;
+	handNumberWithinGame?: number;
 }
 
 export interface PlayerCumulativePoint {
