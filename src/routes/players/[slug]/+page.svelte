@@ -96,13 +96,9 @@
 	<h2 class="mb-3 text-lg font-semibold">Cumulative P&amp;L Over Time</h2>
 	<ChartContainer config={chartConfig} class="aspect-auto h-80 w-full">
 		<LineChart data={chartData} {series} x="session">
-			<ChartTooltip>
-				<div
-					class="grid min-w-[9rem] items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl"
-				>
-					<div class="font-medium">P&amp;L</div>
-				</div>
-			</ChartTooltip>
+			{#snippet tooltip()}
+				<ChartTooltip />
+			{/snippet}
 		</LineChart>
 	</ChartContainer>
 </div>

@@ -109,13 +109,9 @@
 	<h2 class="mb-3 text-lg font-semibold">Chip Stack Progression</h2>
 	<ChartContainer config={chartConfig} class="aspect-auto h-80 w-full">
 		<LineChart data={chipData} {series} x="hand">
-			<ChartTooltip>
-				<div
-					class="grid min-w-[9rem] items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl"
-				>
-					<div class="font-medium">Chips</div>
-				</div>
-			</ChartTooltip>
+			{#snippet tooltip()}
+				<ChartTooltip />
+			{/snippet}
 		</LineChart>
 	</ChartContainer>
 </div>
