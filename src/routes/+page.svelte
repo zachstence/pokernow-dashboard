@@ -1,6 +1,11 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { LineChart, getChartContext } from 'layerchart';
+	import {
+		LineChart,
+		getChartContext,
+		type AnnotationLineProps,
+		type ChartAnnotations
+	} from 'layerchart';
 	import { ChartContainer, ChartTooltip, type ChartConfig } from '$lib/components/ui/chart';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
@@ -62,6 +67,31 @@
 			color: identity.color
 		}))
 	);
+
+	let gameAnnotations = $derived.by(() => {
+		const sorted = [...$page.data.games].sort((a, b) => a.startTime - b.startTime);
+		let handIndex = 1;
+		return sorted.map((game) => {
+			const annotation: AnnotationLineProps = {
+				type: 'line' as const,
+				x: handIndex,
+				label: new Date(game.startTime).toLocaleDateString(),
+				labelPlacement: 'top-right' as const,
+				labelXOffset: 4,
+				props: {
+					line: {
+						class: 'stroke-muted-foreground/15!',
+						'stroke-dasharray': '4 4'
+					},
+					label: {
+						class: 'fill-muted-foreground/40!'
+					}
+				}
+			};
+			handIndex += game.totalHands;
+			return annotation;
+		});
+	});
 </script>
 
 <h1 class="mb-6 text-2xl font-bold">Dashboard</h1>
@@ -139,7 +169,13 @@
 <div>
 	<h2 class="mb-3 text-lg font-semibold">Cumulative Profit Over Time</h2>
 	<ChartContainer config={chartConfig} class="aspect-auto h-80 w-full">
-		<LineChart data={chartData} {series} x="hand" props={{ xAxis: { tickLabelProps: { style: 'display: none' } } }}>
+		<LineChart
+			data={chartData}
+			{series}
+			x="hand"
+			annotations={gameAnnotations}
+			props={{ xAxis: { tickLabelProps: { style: 'display: none' } } }}
+		>
 			{#snippet tooltip()}
 				<ChartTooltip labelFormatter={formatHandLabel} />
 			{/snippet}
