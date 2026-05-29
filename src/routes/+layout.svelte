@@ -23,8 +23,8 @@
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
 
-<div class="flex min-h-screen">
-	<aside class="flex w-64 flex-col border-r bg-muted/30 p-4">
+<div class="flex h-screen">
+	<aside class="flex w-64 shrink-0 flex-col border-r bg-muted/30 p-4">
 		<a href={resolve('/')} class="mb-6 text-xl font-bold tracking-tight">🃏 ZenPoker</a>
 		<nav class="flex flex-col gap-1">
 			<a
@@ -78,7 +78,7 @@
 			</button>
 		</div>
 	</aside>
-	<main class="flex-1 p-6">
+	<main class="flex-1 overflow-y-auto p-6">
 		{@render children()}
 	</main>
 </div>
