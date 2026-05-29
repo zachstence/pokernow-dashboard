@@ -3,8 +3,22 @@
 	import favicon from '$lib/assets/favicon.svg';
 	import { page } from '$app/stores';
 	import { resolve } from '$app/paths';
+	import { Sun, Moon } from '@lucide/svelte';
+	import { onMount } from 'svelte';
 
 	let { children } = $props();
+
+	let dark = $state(false);
+
+	function toggle() {
+		dark = !dark;
+		document.documentElement.classList.toggle('dark', dark);
+		localStorage.setItem('theme', dark ? 'dark' : 'light');
+	}
+
+	onMount(() => {
+		dark = document.documentElement.classList.contains('dark');
+	});
 </script>
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
@@ -49,6 +63,20 @@
 				</a>
 			{/each}
 		</nav>
+		<div class="mt-auto pt-4">
+			<button
+				onclick={toggle}
+				class="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-muted"
+			>
+				{#if dark}
+					<Sun class="size-4" />
+					Light Mode
+				{:else}
+					<Moon class="size-4" />
+					Dark Mode
+				{/if}
+			</button>
+		</div>
 	</aside>
 	<main class="flex-1 p-6">
 		{@render children()}
