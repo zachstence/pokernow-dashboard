@@ -16,21 +16,21 @@ A SvelteKit static site that reads PokerNow JSON replay files from `data/`, vali
 
 ## Event Type Reference (Reverse-Engineered from 2 data files)
 
-| Type | Meaning | Money Impact |
-|------|---------|-------------|
-| 0 | Check | — |
-| 2 | Big blind | committed = value (cumulative) |
-| 3 | Small blind | committed = value (cumulative) |
-| 7 | Call (no allIn) | committed = value (cumulative) |
-| 7 | Call (allIn) | committed += value (all-in amount) |
-| 8 | Bet/Raise (no allIn) | committed = value (cumulative) |
-| 8 | Bet/Raise (allIn) | committed += value (all-in amount) |
-| 9 | Community cards | — |
-| 10 | Showdown winner | won += value |
-| 11 | Fold | — |
-| 12 | Show cards | — |
-| 15 | Hand complete | — |
-| 16 | Uncalled bet refund | refunded += value |
+| Type | Meaning              | Money Impact                       |
+| ---- | -------------------- | ---------------------------------- |
+| 0    | Check                | —                                  |
+| 2    | Big blind            | committed = value (cumulative)     |
+| 3    | Small blind          | committed = value (cumulative)     |
+| 7    | Call (no allIn)      | committed = value (cumulative)     |
+| 7    | Call (allIn)         | committed += value (all-in amount) |
+| 8    | Bet/Raise (no allIn) | committed = value (cumulative)     |
+| 8    | Bet/Raise (allIn)    | committed += value (all-in amount) |
+| 9    | Community cards      | —                                  |
+| 10   | Showdown winner      | won += value                       |
+| 11   | Fold                 | —                                  |
+| 12   | Show cards           | —                                  |
+| 15   | Hand complete        | —                                  |
+| 16   | Uncalled bet refund  | refunded += value                  |
 
 **Key rule**: For non-allIn events (types 2, 3, 7, 8 without `allIn: true`), the `value` is the player's **cumulative total committed** at that point in the hand. For allIn events, `value` is the **all-in amount** (additional chips pushed, equal to the player's remaining stack).
 
@@ -40,16 +40,16 @@ A SvelteKit static site that reads PokerNow JSON replay files from `data/`, vali
 
 ```json
 [
-  {
-    "displayName": "Zach",
-    "color": "#3b82f6",
-    "playerIds": ["P1DfeAJ3jD"]
-  },
-  {
-    "displayName": "Zach 2",
-    "color": "#ef4444",
-    "playerIds": ["EijqWbw_pD"]
-  }
+	{
+		"displayName": "Zach",
+		"color": "#3b82f6",
+		"playerIds": ["P1DfeAJ3jD"]
+	},
+	{
+		"displayName": "Zach 2",
+		"color": "#ef4444",
+		"playerIds": ["EijqWbw_pD"]
+	}
 ]
 ```
 
@@ -60,11 +60,13 @@ Each entry maps one or more PokerNow internal IDs to a canonical player.
 ### Step 1: Setup (Config + Dependencies)
 
 **Changes:**
+
 - `svelte.config.js` — swap `adapter-auto` for `adapter-static`
 - `src/routes/+layout.ts` — add `export const prerender = true`
 - Install packages
 
 **Commands:**
+
 ```sh
 pnpm add -D @sveltejs/adapter-static
 pnpm add zod
@@ -78,17 +80,18 @@ npx shadcn-svelte@latest add button card table tabs chart
 
 **Files to create/modify:**
 
-| File | Purpose |
-|---|---|
-| `src/lib/schemas/replay.ts` | Zod schemas for ReplayFile, Hand, PlayerInHand, HandEvent (discriminated union) |
-| `src/lib/data/types.ts` | Inferred types + derived types (GameWithStats, PlayerResult, ChartPoint, etc.) |
-| `src/lib/data/replay-loader.ts` | Reads and validates all `data/poker-now-hands-*.json` files |
-| `src/lib/data/players.ts` | Reads `data/players.json`, provides identity lookup function |
-| `src/lib/data/stats.ts` | Pure computation functions: computeGameStats, computeAggregateStats, buildPlayerTimeline |
-| `src/lib/data/stats.test.ts` | Vitest unit tests for stats.ts |
-| `data/players.json` | Player identity mapping |
+| File                            | Purpose                                                                                  |
+| ------------------------------- | ---------------------------------------------------------------------------------------- |
+| `src/lib/schemas/replay.ts`     | Zod schemas for ReplayFile, Hand, PlayerInHand, HandEvent (discriminated union)          |
+| `src/lib/data/types.ts`         | Inferred types + derived types (GameWithStats, PlayerResult, ChartPoint, etc.)           |
+| `src/lib/data/replay-loader.ts` | Reads and validates all `data/poker-now-hands-*.json` files                              |
+| `src/lib/data/players.ts`       | Reads `data/players.json`, provides identity lookup function                             |
+| `src/lib/data/stats.ts`         | Pure computation functions: computeGameStats, computeAggregateStats, buildPlayerTimeline |
+| `src/lib/data/stats.test.ts`    | Vitest unit tests for stats.ts                                                           |
+| `data/players.json`             | Player identity mapping                                                                  |
 
 **Stats computation logic per hand:**
+
 1. For each player in the hand, initialize: `committed = 0`, `refunded = 0`, `won = 0`
 2. Iterate events:
    - types 2, 3, 7, 8 (no allIn): `committed = value` (value is cumulative total)
@@ -103,10 +106,12 @@ npx shadcn-svelte@latest add button card table tabs chart
 ### Step 3: Layout (App Shell + Nav)
 
 **Files:**
+
 - `src/routes/+layout.svelte` — sidebar nav with links to Dashboard, Games, and player profile links (generated from data)
 - `src/routes/+layout.ts` — global `export const prerender = true`, shared load function that reads all game data and makes it available via `$page.data`
 
 **Nav structure:**
+
 ```
 ┌─────────────────────────────┐
 │  🃏 ZenPoker                │
@@ -129,6 +134,7 @@ The layout load function reads all games and computes aggregate data (including 
 **Files:** `src/routes/+page.svelte` + `src/routes/+page.server.ts`
 
 **Content:**
+
 - **Stat cards** (using shadcn Card): total sessions, total hands, unique players, games with biggest pot
 - **Player standings table**: player name, games played, hands played, total P&L, biggest win, biggest loss
 - **Line chart**: cumulative player profit over time
@@ -144,15 +150,18 @@ The layout load function reads all games and computes aggregate data (including 
 ### Step 5: Games Routes
 
 **Files:**
+
 - `src/routes/games/+page.svelte` — game listing table
 - `src/routes/games/[slug]/+page.server.ts` — load function (reads single game + computes stats)
 - `src/routes/games/[slug]/+page.svelte` — game detail view
 
 **`/games` listing:**
+
 - Table with columns: Date, Game ID, Hands, Players, Biggest Pot
 - Each row links to `/games/[gameId]`
 
 **`/games/[slug]` detail:**
+
 - Game header: date, starting stacks, blinds
 - Per-player P&L summary cards
 - **Line chart**: chip stack progression across hands
@@ -168,10 +177,12 @@ The layout load function reads all games and computes aggregate data (including 
 ### Step 6: Player Routes
 
 **Files:**
+
 - `src/routes/players/[slug]/+page.server.ts` — load function
 - `src/routes/players/[slug]/+page.svelte` — player profile
 
 **Content:**
+
 - **Stat cards**: total sessions, total hands, total P&L, biggest win, biggest loss, win rate (hands won / hands played)
 - **Line chart**: cumulative P&L over time (one point per session)
 - **Per-session breakdown table**: session date, hands played, P&L for that session
