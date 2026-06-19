@@ -8,25 +8,57 @@ const PlayerSchema = z.object({
 	stack: z.int()
 });
 
-const RankSchema = z.enum(['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A']);
+const RankSchemaT = z.enum(['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A']);
+const RankSchema10 = z.enum(['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']);
 const SuitSchema = z.enum(['h', 'd', 'c', 's']);
 
-type RankSchema = z.infer<typeof RankSchema>;
+type RankSchemaT = z.infer<typeof RankSchemaT>;
 type SuitSchema = z.infer<typeof SuitSchema>;
 
-type Card = { rank: RankSchema; suit: SuitSchema };
+type Card = { rank: RankSchemaT; suit: SuitSchema };
 
 const CardSchema = z.preprocess(
 	(val) => (typeof val === 'string' ? val.split('') : val),
-	z.tuple([RankSchema, SuitSchema]).transform(([rank, suit]): Card => ({ rank, suit }))
+	z.tuple([RankSchemaT, SuitSchema]).transform(([rank, suit]): Card => ({ rank, suit }))
 );
 
 const HandsLabelsSchema = z.record(
 	z.string().refine((val) => val.trim() !== '' && Number.isInteger(Number(val))),
 	z.array(
-		z.object({
-			c: z.int()
-		})
+		z.discriminatedUnion('c', [
+			z.object({
+				c: z.literal(1).transform(() => 'RoyalFlush')
+			}),
+			z.object({
+				c: z.literal(2).transform(() => 'StraightFlush')
+			}),
+			z.object({
+				c: z.literal(3).transform(() => 'FourOfAKind')
+			}),
+			z.object({
+				c: z.literal(4).transform(() => 'FullHouse')
+			}),
+			z.object({
+				c: z.literal(5).transform(() => 'Flush')
+			}),
+			z.object({
+				c: z.literal(6).transform(() => 'Straight')
+			}),
+			z.object({
+				c: z.literal(7).transform(() => 'ThreeOfAKind')
+			}),
+			z.object({
+				c: z.literal(8).transform(() => 'TwoPair'),
+				d: z.tuple([RankSchema10, RankSchema10])
+			}),
+			z.object({
+				c: z.literal(9).transform(() => 'Pair'),
+				d: z.tuple([RankSchema10])
+			}),
+			z.object({
+				c: z.literal(10).transform(() => 'HighCard')
+			})
+		])
 	)
 );
 
@@ -82,7 +114,7 @@ const PayloadSchema = z.discriminatedUnion('type', [
 		]),
 		run: z.int(),
 		cards: z.array(CardSchema),
-		handsLabels: z.unknown()
+		handsLabels: HandsLabelsSchema
 	}),
 	z.object({
 		type: z.literal(10).transform(() => 'Collect'),
