@@ -1,27 +1,44 @@
 [
 	{
-		"displayName": "Alice",
+		"displayName": "Zach",
 		"color": "#3b82f6",
-		"playerIds": ["p1_aBcDeFgHiJ"]
+		"playerIds": [
+			"gKkbM5nCAy"
+		]
 	},
 	{
-		"displayName": "Bob",
+		"displayName": "Benri",
 		"color": "#ef4444",
-		"playerIds": ["p2_bCdEfGhIjK"]
+		"playerIds": [
+			"O9epsVqUWa"
+		]
 	},
 	{
-		"displayName": "Charlie",
+		"displayName": "Adrian",
 		"color": "#22c55e",
-		"playerIds": ["p3_cDeFgHiJkL"]
+		"playerIds": [
+			"xJrZqilXR1"
+		]
 	},
 	{
-		"displayName": "Diana",
+		"displayName": "John",
 		"color": "#f59e0b",
-		"playerIds": ["p4_dEfGhIjKlM"]
+		"playerIds": [
+			"dzLv4GssMl"
+		]
 	},
 	{
-		"displayName": "Eve",
+		"displayName": "Denis",
 		"color": "#a855f7",
-		"playerIds": ["p5_eFgHiJkLmN"]
+		"playerIds": [
+			"fMtVr2WlPF"
+		]
+	},
+	{
+		"displayName": "Leo",
+		"color": "#a855f7",
+		"playerIds": [
+			"kJtMwQ1x2Q"
+		]
 	}
 ]

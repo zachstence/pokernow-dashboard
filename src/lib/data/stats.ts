@@ -12,12 +12,12 @@ import type {
 
 function isMoneyEvent(event: HandEvent): boolean {
 	const t = event.payload.type;
-	return t === 2 || t === 3 || t === 7 || t === 8 || t === 10 || t === 16;
+	return t === 2 || t === 3 || t === 4 || t === 5 || t === 7 || t === 8 || t === 10 || t === 16;
 }
 
 function isCommitEvent(event: HandEvent): boolean {
 	const t = event.payload.type;
-	return t === 2 || t === 3 || t === 7 || t === 8;
+	return t === 2 || t === 3 || t === 4 || t === 5 || t === 7 || t === 8;
 }
 
 function computeHandPlayerStats(hand: Hand): Map<string, HandPlayerStats> {

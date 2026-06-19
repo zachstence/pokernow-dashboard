@@ -54,7 +54,7 @@ const foldPayload = z.object({ type: z.literal(11), seat: z.number() });
 const showCardsPayload = z.object({
 	type: z.literal(12),
 	seat: z.number(),
-	cards: z.array(z.string())
+	cards: z.array(z.string().nullable())
 });
 
 const handCompletePayload = z.object({ type: z.literal(15) });
@@ -65,16 +65,31 @@ const uncalledBetRefundPayload = z.object({
 	seat: z.number()
 });
 
+const missedBigBlindPayload = z.object({ type: z.literal(4), seat: z.number(), value: z.number() });
+
+const missedSmallBlindPayload = z.object({ type: z.literal(5), seat: z.number(), value: z.number() });
+
+const handApprovalPayload = z.object({
+	type: z.literal(14),
+	approved: z.boolean(),
+	autoApproved: z.boolean(),
+	approvedSeats: z.array(z.number()),
+	deniedSeats: z.array(z.number())
+});
+
 const eventPayloadSchema = z.discriminatedUnion('type', [
 	checkPayload,
 	bigBlindPayload,
 	smallBlindPayload,
+	missedBigBlindPayload,
+	missedSmallBlindPayload,
 	callPayload,
 	betRaisePayload,
 	communityCardsPayload,
 	showdownWinnerPayload,
 	foldPayload,
 	showCardsPayload,
+	handApprovalPayload,
 	handCompletePayload,
 	uncalledBetRefundPayload
 ]);
