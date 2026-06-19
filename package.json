@@ -14,7 +14,9 @@
 		"format": "prettier --write .",
 		"test:unit": "vitest",
 		"test": "npm run test:unit -- --run && npm run test:e2e",
-		"test:e2e": "playwright install && playwright test"
+		"test:e2e": "playwright install && playwright test",
+		"transform-data": "tsx scripts/transform-data/index.ts",
+		"transform-data:watch": "tsx watch scripts/transform-data/index.ts"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^2.0.4",
@@ -37,6 +39,7 @@
 		"svelte": "^5.55.2",
 		"svelte-check": "^4.4.6",
 		"tailwindcss": "^4.2.2",
+		"tsx": "^4.22.4",
 		"typescript": "^6.0.2",
 		"typescript-eslint": "^8.58.1",
 		"vite": "^8.0.7",
