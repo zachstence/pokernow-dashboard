@@ -3,9 +3,10 @@ import z from 'zod';
 
 const PlayersFileSchema = z.array(
 	z.object({
+		id: z.int(),
 		displayName: z.string(),
 		color: z.string(),
-		playerIds: z.array(z.string())
+		pokerNowPlayerIds: z.array(z.string())
 	})
 );
 

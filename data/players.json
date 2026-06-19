@@ -1,43 +1,49 @@
 [
 	{
+		"id": 1,
 		"displayName": "Zach",
 		"color": "#3b82f6",
-		"playerIds": [
+		"pokerNowPlayerIds": [
 			"gKkbM5nCAy"
 		]
 	},
 	{
+		"id": 2,
 		"displayName": "Benri",
 		"color": "#ef4444",
-		"playerIds": [
+		"pokerNowPlayerIds": [
 			"O9epsVqUWa"
 		]
 	},
 	{
+		"id": 3,
 		"displayName": "Adrian",
 		"color": "#22c55e",
-		"playerIds": [
+		"pokerNowPlayerIds": [
 			"xJrZqilXR1"
 		]
 	},
 	{
+		"id": 4,
 		"displayName": "John",
 		"color": "#f59e0b",
-		"playerIds": [
+		"pokerNowPlayerIds": [
 			"dzLv4GssMl"
 		]
 	},
 	{
+		"id": 5,
 		"displayName": "Denis",
 		"color": "#a855f7",
-		"playerIds": [
+		"pokerNowPlayerIds": [
 			"fMtVr2WlPF"
 		]
 	},
 	{
+		"id": 6,
 		"displayName": "Leo",
 		"color": "#a855f7",
-		"playerIds": [
+		"pokerNowPlayerIds": [
 			"kJtMwQ1x2Q"
 		]
 	}
