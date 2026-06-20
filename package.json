@@ -15,8 +15,8 @@
 		"test:unit": "vitest",
 		"test": "npm run test:unit -- --run && npm run test:e2e",
 		"test:e2e": "playwright install && playwright test",
-		"transform-data": "tsx scripts/transform-data/index.ts",
-		"transform-data:watch": "tsx watch scripts/transform-data/index.ts"
+		"transform-data": "tsx src/lib/server/transform-data/index.ts",
+		"transform-data:watch": "tsx watch src/lib/server/transform-data/index.ts"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^2.1.0",
