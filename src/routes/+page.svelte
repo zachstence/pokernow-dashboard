@@ -62,17 +62,22 @@
 			{#each Object.entries(data) as [playerId, points]}
 				{#each points as point, p}
 					{@const prevPoint = points[p - 1]}
-
-					{#if prevPoint}
-						{@const isGap = point.x - prevPoint.x > 1}
-
+					{#if prevPoint && point.x - prevPoint.x > 1}
 						<Spline
 							data={[prevPoint, point]}
-							// curve={curveLinear}
 							stroke={colors[playerId]}
 							strokeWidth={2}
-							stroke-dasharray={isGap ? '4 4' : undefined}
+							stroke-dasharray="4 4"
 						/>
+					{/if}
+				{/each}
+			{/each}
+
+			{#each Object.entries(data) as [playerId, points]}
+				{#each points as point, p}
+					{@const prevPoint = points[p - 1]}
+					{#if prevPoint && !(point.x - prevPoint.x > 1)}
+						<Spline data={[prevPoint, point]} stroke={colors[playerId]} strokeWidth={2} />
 					{/if}
 				{/each}
 			{/each}
