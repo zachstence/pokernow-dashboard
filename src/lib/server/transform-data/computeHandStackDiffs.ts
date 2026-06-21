@@ -5,14 +5,16 @@ import type { Hand } from './loadHandsFile';
  */
 export const computeHandStackDiffs = (
 	hand: Hand
-): { [pokerNowPlayerId: string]: { handDiff: number; previousHandDiff: number } } => {
-	const diffs: { [pokerNowPlayerId: string]: { handDiff: number; previousHandDiff: number } } = {};
+): { [pokerNowPlayerId: string]: { handDiff: number; postedMissingSmallBlind?: number } } => {
+	const diffs: {
+		[pokerNowPlayerId: string]: { handDiff: number; postedMissingSmallBlind?: number };
+	} = {};
 
 	for (const player of hand.players) {
 		const pokerNowPlayerId = player.id;
 		let handDiff = 0;
 		let runningDiff = 0;
-		let previousHandDiff = 0;
+		let postedMissingSmallBlind = undefined;
 
 		for (const event of hand.events) {
 			const payload = event.payload;
@@ -31,7 +33,7 @@ export const computeHandStackDiffs = (
 			}
 
 			if (payload.type === 'PostMissingSmallBlind') {
-				previousHandDiff = -payload.value;
+				postedMissingSmallBlind = -payload.value;
 			}
 
 			if (
@@ -47,7 +49,7 @@ export const computeHandStackDiffs = (
 
 		diffs[pokerNowPlayerId] = {
 			handDiff,
-			previousHandDiff
+			postedMissingSmallBlind
 		};
 	}
 

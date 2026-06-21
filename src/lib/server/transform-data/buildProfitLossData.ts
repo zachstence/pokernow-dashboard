@@ -52,22 +52,22 @@ export const buildProfitLossData = (
 					});
 					continue;
 				}
+				const { handDiff, postedMissingSmallBlind } = stackDiffs[handPlayer.id]!;
 
-				const prev = playerData[playerData.length - 1]!.value;
-				const { handDiff, previousHandDiff } = stackDiffs[handPlayer.id]!;
-
-				const previousHand = file.hands[h - 1];
-				let previousDiff = 0;
-				if (previousHand) {
-					previousDiff = convertStack(previousHandDiff, previousHand.cents);
-					if (player.displayName === 'Zach') {
-						console.log(`${h + 1} previousDiff: ${previousDiff}`);
-					}
-					playerData[playerData.length - 1]!.value += previousDiff;
+				// Adjust previous hand for postedMissingSmallBlind amount
+				let postedMissingSmallBlindDiff = undefined;
+				if (postedMissingSmallBlind !== undefined) {
+					const previousHand = file.hands[h - 1]!;
+					postedMissingSmallBlindDiff = convertStack(
+						postedMissingSmallBlind ?? 0,
+						previousHand.cents
+					);
+					playerData[playerData.length - 1]!.value += postedMissingSmallBlindDiff;
 				}
 
+				const prev = playerData[playerData.length - 1]!.value;
 				const diff = convertStack(handDiff, hand.cents);
-				const value = round(prev + diff + previousDiff, 2);
+				const value = round(prev + diff, 2);
 
 				playerData.push({
 					handNumber,

@@ -57,6 +57,7 @@ const pokerNowPlayerId = player.pokerNowPlayerIds[0]!;
 
 const startingBalance = 25;
 const playerData = profitLossData[playerId]!;
+
 for (let h = 0; h < numHands - 1; h++) {
 	for (const [handIndex, diff] of Object.entries(spotFixes)) {
 		if (h > parseInt(handIndex)) {
@@ -73,6 +74,7 @@ for (let h = 0; h < numHands - 1; h++) {
 		console.log(
 			`${(h + 1).toString().padStart(3, ' ')} | ${actualBalance.toFixed(2).padStart(6, ' ')} | ${expectedBalance.toFixed(2).padStart(6, ' ')} | ${matches ? '✅' : '❌'}`
 		);
+		if (!matches) throw new Error();
 	} else {
 		console.log(
 			`${(h + 1).toString().padStart(3, ' ')} | ${actualBalance.toFixed(2).padStart(6, ' ')} | not in hand`
