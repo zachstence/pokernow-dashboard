@@ -31,7 +31,6 @@ export const buildProfitLossData = (
 		];
 	}
 
-	let handNumber = 1;
 	for (const file of handsFiles) {
 		for (let h = 0; h < file.hands.length; h++) {
 			const hand = file.hands[h]!;
@@ -46,7 +45,7 @@ export const buildProfitLossData = (
 				);
 				if (!handPlayer) {
 					playerData.push({
-						handNumber,
+						handNumber: h + 1,
 						value: lastValue,
 						played: false
 					});
@@ -70,7 +69,7 @@ export const buildProfitLossData = (
 				const value = round(prev + diff, 2);
 
 				playerData.push({
-					handNumber,
+					handNumber: h + 1,
 					value,
 					played: true
 				});

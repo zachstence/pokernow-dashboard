@@ -1,45 +1,10 @@
 <script lang="ts">
 	import * as Chart from '$lib/components/ui/chart/index.js';
 	import { Axis, Chart as LayerChart, Spline, Svg } from 'layerchart';
+	import type { PageProps } from './$types';
 
-	// every player series needs to start with a 0 and end with their current balance so the graph is fully connected (either dotted or solid) all the way through
-
-	const data: Record<string, { x: number; value: number | null }[]> = {
-		player1: [
-			{ x: 1, value: 0 },
-			{ x: 2, value: 0 },
-			{ x: 3, value: 75 },
-			{ x: 5, value: 75 },
-			{ x: 6, value: 120 }
-		],
-		player2: [
-			{ x: 1, value: 0 },
-			{ x: 2, value: 50 },
-			{ x: 3, value: 60 },
-			{ x: 6, value: 60 }
-		],
-		player3: [
-			{ x: 1, value: 0 },
-			{ x: 2, value: -50 },
-			{ x: 3, value: -35 },
-			{ x: 4, value: -10 },
-			{ x: 5, value: -20 },
-			{ x: 6, value: 20 }
-		],
-		player4: [
-			{ x: 1, value: 0 },
-			{ x: 3, value: 0 },
-			{ x: 5, value: 0 },
-			{ x: 6, value: -45 }
-		]
-	};
-
-	const colors: Record<string, string> = {
-		player1: 'red',
-		player2: 'orange',
-		player3: 'green',
-		player4: 'blue'
-	};
+	const { data }: PageProps = $props();
+	console.log({ data });
 
 	const chartConfig = {
 		desktop: {
@@ -54,33 +19,35 @@
 </script>
 
 <Chart.Container config={chartConfig} class="min-h-[200px] w-full">
-	<LayerChart x="x" y="value">
+	<LayerChart x="handNumber" y="value">
 		<Svg>
 			<Axis placement="bottom" format="integer" />
 			<Axis placement="left" />
 
-			{#each Object.entries(data) as [playerId, points]}
+			<!-- {#each Object.entries(data.profitLossData) as [playerId, points]}
+				{@const color = data.players.find((p) => p.id === parseInt(playerId))!.color}
 				{#each points as point, p}
 					{@const prevPoint = points[p - 1]}
-					{#if prevPoint && point.x - prevPoint.x > 1}
+					{#if prevPoint && !point.played}
 						<Spline
 							data={[prevPoint, point]}
-							stroke={colors[playerId]}
+							stroke={color}
 							strokeWidth={2}
 							stroke-dasharray="4 4"
 						/>
 					{/if}
 				{/each}
-			{/each}
+			{/each} -->
 
-			{#each Object.entries(data) as [playerId, points]}
-				{#each points as point, p}
-					{@const prevPoint = points[p - 1]}
-					{#if prevPoint && !(point.x - prevPoint.x > 1)}
-						<Spline data={[prevPoint, point]} stroke={colors[playerId]} strokeWidth={2} />
-					{/if}
-				{/each}
+			<!-- {#each Object.entries(data.profitLossData) as [playerId, points]} -->
+			<!-- {@const color = data.players.find((p) => p.id === parseInt(playerId))!.color} -->
+			{#each data.profitLossData[1] as point, p}
+				{@const prevPoint = data.profitLossData[1]![p - 1]}
+				{#if prevPoint && point.played}
+					<Spline data={[prevPoint, point]} stroke={'red'} strokeWidth={2} />
+				{/if}
 			{/each}
+			<!-- {/each} -->
 		</Svg>
 	</LayerChart>
 </Chart.Container>
