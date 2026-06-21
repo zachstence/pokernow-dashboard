@@ -1,19 +1,13 @@
-import { convertStack } from './convertStack';
 import type { Hand } from './loadHandsFile';
-import type { PlayersFile } from './loadPlayersFile';
-import { pokerNowPlayerIdToPlayerId } from './pokerNowPlayerIdToPlayerId';
 
 /**
- * @returns Each player's balance at the end of the hand
+ * @returns Each player's difference in stack from the start to the end of a hand
  */
-export const computeHandEndingBalances = (
-	players: PlayersFile,
-	hand: Hand
-): { [playerId: number]: number } => {
-	const stacks: { [pokerNowPlayerId: string]: number } = {};
+export const computeHandStackDiffs = (hand: Hand): { [pokerNowPlayerId: string]: number } => {
+	const diffs: { [pokerNowPlayerId: string]: number } = {};
 	for (const player of hand.players) {
 		const pokerNowPlayerId = player.id;
-		stacks[pokerNowPlayerId] = player.stack;
+		diffs[pokerNowPlayerId] = 0;
 	}
 
 	for (const player of hand.players) {
@@ -49,16 +43,8 @@ export const computeHandEndingBalances = (
 			}
 		}
 
-		stacks[pokerNowPlayerId]! += diff;
+		diffs[pokerNowPlayerId]! += diff;
 	}
 
-	const balances: { [playerId: number]: number } = Object.fromEntries(
-		Object.entries(stacks).map(([pokerNowPlayerId, stack]) => {
-			const playerId = pokerNowPlayerIdToPlayerId(players, pokerNowPlayerId);
-			const balance = convertStack(stack, hand.cents);
-			return [playerId, balance];
-		})
-	);
-
-	return balances;
+	return diffs;
 };
