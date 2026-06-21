@@ -6,16 +6,11 @@
 	const { data }: PageProps = $props();
 	type Point = (typeof data.profitLossData)[number][number];
 
-	const chartConfig = {
-		desktop: {
-			label: 'Desktop',
-			color: '#2563eb'
-		},
-		mobile: {
-			label: 'Mobile',
-			color: '#60a5fa'
-		}
-	} satisfies Chart.ChartConfig;
+	const chartConfig = $derived(
+		Object.fromEntries(
+			data.players.map((p) => [p.displayName, { label: p.displayName, color: p.color }])
+		) satisfies Chart.ChartConfig
+	);
 
 	function buildSplines(points: Point[], played: boolean): Point[][] {
 		const splines = points.reduce<Point[][]>((acc, point) => {
@@ -54,12 +49,21 @@
 		return splines;
 	}
 
-	const allPoints = $derived(data.profitLossData[1]!);
+	type PlayerSplines = {
+		player: (typeof data.players)[number];
+		playingSplines: Point[][];
+		notPlayingSplines: Point[][];
+	};
 
-	const playingSplines = $derived(buildSplines(allPoints, true));
-	const notPlayingSplines = $derived(buildSplines(allPoints, false));
-
-	$inspect(playingSplines, notPlayingSplines);
+	const playerSplines = $derived(
+		data.players.map(
+			(player): PlayerSplines => ({
+				player,
+				playingSplines: buildSplines(data.profitLossData[player.id]!, true),
+				notPlayingSplines: buildSplines(data.profitLossData[player.id]!, false)
+			})
+		)
+	);
 </script>
 
 <Chart.Container config={chartConfig} class="min-h-[200px] w-full">
@@ -68,12 +72,22 @@
 			<Axis placement="bottom" format="integer" />
 			<Axis placement="left" />
 
-			{#each notPlayingSplines as spline (spline[0]!.handNumber)}
-				<Spline data={spline} stroke="red" strokeWidth={2} stroke-dasharray="4 4" opacity={0.2} />
+			{#each playerSplines as { player, notPlayingSplines } (player.id)}
+				{#each notPlayingSplines as spline (spline[0]!.handNumber)}
+					<Spline
+						data={spline}
+						stroke={player.color}
+						strokeWidth={2}
+						stroke-dasharray="4 4"
+						opacity={0.4}
+					/>
+				{/each}
 			{/each}
 
-			{#each playingSplines as spline (spline[0]!.handNumber)}
-				<Spline data={spline} stroke="red" strokeWidth={2} />
+			{#each playerSplines as { player, playingSplines } (player.id)}
+				{#each playingSplines as spline (spline[0]!.handNumber)}
+					<Spline data={spline} stroke={player.color} strokeWidth={2} />
+				{/each}
 			{/each}
 		</Svg>
 	</LayerChart>
