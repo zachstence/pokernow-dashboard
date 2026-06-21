@@ -12,6 +12,8 @@ const PlayersFileSchema = z.array(
 
 export type PlayersFile = z.infer<typeof PlayersFileSchema>;
 
+export type PlayerId = PlayersFile[number]['id'];
+
 export const loadPlayersFile = async (): Promise<PlayersFile> => {
 	const raw = await readFile('./data/players.json', { encoding: 'utf-8' });
 	const json = JSON.parse(raw);
