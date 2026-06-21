@@ -1,6 +1,8 @@
 import { buildProfitLossData } from './buildProfitLossData';
+import { convertStack } from './convertStack';
 import { loadHandsFile } from './loadHandsFile';
 import { loadPlayersFile } from './loadPlayersFile';
+import { round } from './round';
 
 const players = await loadPlayersFile();
 // console.log({ players });
@@ -21,21 +23,59 @@ const profitLossData = await buildProfitLossData(players, [handsFile]);
 
 const numHands = Object.values(profitLossData)[0]!.length;
 
-const header = `        ${Object.keys(profitLossData)
-	.map((x) => x.padStart(7, ' '))
-	.join(' | ')}`;
-console.log(header);
-console.log('-'.repeat(65));
+// Log P/L data for each player
+// const header = `        ${Object.keys(profitLossData)
+// 	.map((x) => x.padStart(7, ' '))
+// 	.join(' | ')}`;
+// console.log(header);
+// console.log('-'.repeat(65));
 
-for (let h = 0; h < numHands; h++) {
-	let line = Object.values(profitLossData)
-		.map((hands) => {
-			const value = hands[h]!.value;
-			const s = value.toFixed(2);
-			const signed = value > 0 ? `+${s}` : value < 0 ? s : ` ${s}`;
-			return signed.padStart(7, ' ');
-		})
-		.join(' | ');
-	line = `${h}\t| ${line}`;
-	console.log(line);
+// for (let h = 0; h < numHands; h++) {
+// 	let line = Object.values(profitLossData)
+// 		.map((hands) => {
+// 			const value = hands[h]!.value;
+// 			const s = value.toFixed(2);
+// 			const signed = value > 0 ? `+${s}` : value < 0 ? s : ` ${s}`;
+// 			return signed.padStart(7, ' ');
+// 		})
+// 		.join(' | ');
+// 	line = `${h}\t| ${line}`;
+// 	console.log(line);
+// }
+
+// Log actual vs expected hand starting stack
+const spotFixes: { [handIndex: number]: number } = {
+	// 74: -0.1,
+	// 82: -0.1,
+	// 86: -0.1,
+	// 139: -0.1
+};
+
+const player = players.find((p) => p.displayName === 'Zach')!;
+const playerId = player.id;
+const pokerNowPlayerId = player.pokerNowPlayerIds[0]!;
+
+const startingBalance = 25;
+const playerData = profitLossData[playerId]!;
+for (let h = 0; h < numHands - 1; h++) {
+	for (const [handIndex, diff] of Object.entries(spotFixes)) {
+		if (h > parseInt(handIndex)) {
+			playerData[h]!.value += diff;
+		}
+	}
+
+	const actualBalance = round(startingBalance + playerData[h]!.value, 2);
+
+	const handPlayer = handsFile.hands[h]!.players.find((p) => p.id === pokerNowPlayerId);
+	if (handPlayer) {
+		const expectedBalance = convertStack(handPlayer!.stack, handsFile.hands[h]!.cents);
+		const matches = actualBalance === expectedBalance;
+		console.log(
+			`${(h + 1).toString().padStart(3, ' ')} | ${actualBalance.toFixed(2).padStart(6, ' ')} | ${expectedBalance.toFixed(2).padStart(6, ' ')} | ${matches ? '✅' : '❌'}`
+		);
+	} else {
+		console.log(
+			`${(h + 1).toString().padStart(3, ' ')} | ${actualBalance.toFixed(2).padStart(6, ' ')} | not in hand`
+		);
+	}
 }

@@ -33,7 +33,8 @@ export const buildProfitLossData = (
 
 	let handNumber = 1;
 	for (const file of handsFiles) {
-		for (const hand of file.hands) {
+		for (let h = 0; h < file.hands.length; h++) {
+			const hand = file.hands[h]!;
 			const stackDiffs = computeHandStackDiffs(hand);
 
 			for (const player of players) {
@@ -53,8 +54,20 @@ export const buildProfitLossData = (
 				}
 
 				const prev = playerData[playerData.length - 1]!.value;
-				const diff = convertStack(stackDiffs[handPlayer.id]!, hand.cents);
-				const value = round(prev + diff, 2);
+				const { handDiff, previousHandDiff } = stackDiffs[handPlayer.id]!;
+
+				const previousHand = file.hands[h - 1];
+				let previousDiff = 0;
+				if (previousHand) {
+					previousDiff = convertStack(previousHandDiff, previousHand.cents);
+					if (player.displayName === 'Zach') {
+						console.log(`${h + 1} previousDiff: ${previousDiff}`);
+					}
+					playerData[playerData.length - 1]!.value += previousDiff;
+				}
+
+				const diff = convertStack(handDiff, hand.cents);
+				const value = round(prev + diff + previousDiff, 2);
 
 				playerData.push({
 					handNumber,

@@ -19,25 +19,26 @@ describe('computeHandStackDiffs', () => {
 			82
 		];
 
-		for (let h = 0; h < handsFile.hands.length - 1; h++) {
-			if (excludedHands.includes(h)) continue;
-			// const h = 44;
-			const currentHand = handsFile.hands[h]!;
-			const nextHand = handsFile.hands[h + 1]!;
+		// for (let h = 0; h < handsFile.hands.length - 1; h++) {
+		// if (excludedHands.includes(h)) continue;
+		const h = 83;
+		const currentHand = handsFile.hands[h]!;
+		const nextHand = handsFile.hands[h + 1]!;
 
-			const actual = computeHandStackDiffs(currentHand);
+		const actual = computeHandStackDiffs(currentHand);
+		console.log({ actual });
 
-			for (const current of currentHand.players) {
-				const next = nextHand.players.find((p) => p.id === current.id);
-				// Player isn't in next hand, nothing to compare to
-				if (!next) continue;
+		for (const current of currentHand.players) {
+			const next = nextHand.players.find((p) => p.id === current.id);
+			// Player isn't in next hand, nothing to compare to
+			if (!next) continue;
 
-				const expectedDiff = next.stack - current.stack;
+			const expectedDiff = next.stack - current.stack;
 
-				const actualDiff = actual[current.id];
+			const actualDiff = actual[current.id];
 
-				expect(actualDiff, `Hand index ${h}, ${current.id} doesn't match`).toEqual(expectedDiff);
-			}
+			expect(actualDiff, `Hand index ${h}, ${current.id} doesn't match`).toEqual(expectedDiff);
 		}
+		// }
 	});
 });

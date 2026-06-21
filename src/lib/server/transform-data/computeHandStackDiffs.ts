@@ -3,17 +3,16 @@ import type { Hand } from './loadHandsFile';
 /**
  * @returns Each player's difference in stack from the start to the end of a hand
  */
-export const computeHandStackDiffs = (hand: Hand): { [pokerNowPlayerId: string]: number } => {
-	const diffs: { [pokerNowPlayerId: string]: number } = {};
-	for (const player of hand.players) {
-		const pokerNowPlayerId = player.id;
-		diffs[pokerNowPlayerId] = 0;
-	}
+export const computeHandStackDiffs = (
+	hand: Hand
+): { [pokerNowPlayerId: string]: { handDiff: number; previousHandDiff: number } } => {
+	const diffs: { [pokerNowPlayerId: string]: { handDiff: number; previousHandDiff: number } } = {};
 
 	for (const player of hand.players) {
 		const pokerNowPlayerId = player.id;
-		let diff = 0;
+		let handDiff = 0;
 		let runningDiff = 0;
+		let previousHandDiff = 0;
 
 		for (const event of hand.events) {
 			const payload = event.payload;
@@ -25,11 +24,14 @@ export const computeHandStackDiffs = (hand: Hand): { [pokerNowPlayerId: string]:
 				payload.type === 'PostBigBlind' ||
 				payload.type === 'PostSmallBlind' ||
 				payload.type === 'PostMissingBigBlind' ||
-				payload.type === 'PostMissingSmallBlind' ||
 				payload.type === 'Call' ||
 				payload.type === 'Raise'
 			) {
 				runningDiff = -payload.value;
+			}
+
+			if (payload.type === 'PostMissingSmallBlind') {
+				previousHandDiff = -payload.value;
 			}
 
 			if (
@@ -38,12 +40,15 @@ export const computeHandStackDiffs = (hand: Hand): { [pokerNowPlayerId: string]:
 				payload.type === 'Collect' ||
 				payload.type === 'HandFinished'
 			) {
-				diff += runningDiff;
+				handDiff += runningDiff;
 				runningDiff = 0;
 			}
 		}
 
-		diffs[pokerNowPlayerId]! += diff;
+		diffs[pokerNowPlayerId] = {
+			handDiff,
+			previousHandDiff
+		};
 	}
 
 	return diffs;
