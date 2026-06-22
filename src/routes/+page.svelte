@@ -32,17 +32,13 @@
 			return acc;
 		}, []);
 
+		// Connect each spline group back to the preceding hand to ensure continuous lines
 		for (const spline of splines) {
 			const firstPt = spline[0]!;
-			const lastPt = spline[spline.length - 1]!;
 			const firstIdx = points.findIndex((p) => p.handNumber === firstPt.handNumber);
-			const lastIdx = points.findIndex((p) => p.handNumber === lastPt.handNumber);
 
-			if (firstIdx > 0 && points[firstIdx - 1]!.played !== played) {
+			if (firstIdx > 0) {
 				spline.unshift(points[firstIdx - 1]!);
-			}
-			if (lastIdx < points.length - 1 && points[lastIdx + 1]!.played !== played) {
-				spline.push(points[lastIdx + 1]!);
 			}
 		}
 
