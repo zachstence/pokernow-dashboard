@@ -1,90 +1,118 @@
 <script lang="ts">
 	import * as Chart from '$lib/components/ui/chart/index.js';
-	import { Axis, Chart as LayerChart, Spline, Svg } from 'layerchart';
+	import { Axis, Highlight, Chart as LayerChart, Spline, Svg, Tooltip } from 'layerchart';
 	import type { PageProps } from './$types';
 
-	const { data }: PageProps = $props();
-	type Point = (typeof data.profitLossData)[number][number];
+	const { data: pageData }: PageProps = $props();
 
 	const chartConfig = $derived(
 		Object.fromEntries(
-			data.players.map((p) => [p.displayName, { label: p.displayName, color: p.color }])
+			pageData.players.map((p) => [p.id.toString(), { label: p.displayName, color: p.color }])
 		) satisfies Chart.ChartConfig
 	);
 
-	function buildSplines(points: Point[], played: boolean): Point[][] {
-		const splines = points.reduce<Point[][]>((acc, point) => {
-			if (point.played !== played) return acc;
-
-			const lastSpline = acc[acc.length - 1];
-			if (!lastSpline) {
-				acc.push([point]);
-				return acc;
-			}
-
-			const lastPoint = lastSpline[lastSpline.length - 1]!;
-			if (point.handNumber === lastPoint.handNumber + 1) {
-				lastSpline.push(point);
-				return acc;
-			}
-
-			acc.push([point]);
+	const chartData = $derived(
+		Array.from({ length: pageData.numHands }).reduce<Record<string, unknown>[]>((acc, _, i) => {
+			acc[i] = {
+				handNumber: i + 1
+			};
+			Object.keys(pageData.profitLossData).forEach((playerId) => {
+				const pid = parseInt(playerId);
+				const handData = pageData.profitLossData[pid]?.[i];
+				if (handData) {
+					acc[i]![playerId] = handData.value;
+					// Store the played flag globally keyed by player ID so we can access it during rendering
+					acc[i]![`${playerId}_played`] = handData.played;
+				}
+			});
 			return acc;
-		}, []);
-
-		// Connect each spline group back to the preceding hand to ensure continuous lines
-		for (const spline of splines) {
-			const firstPt = spline[0]!;
-			const firstIdx = points.findIndex((p) => p.handNumber === firstPt.handNumber);
-
-			if (firstIdx > 0) {
-				spline.unshift(points[firstIdx - 1]!);
-			}
-		}
-
-		return splines;
-	}
-
-	type PlayerSplines = {
-		player: (typeof data.players)[number];
-		playingSplines: Point[][];
-		notPlayingSplines: Point[][];
-	};
-
-	const playerSplines = $derived(
-		data.players.map(
-			(player): PlayerSplines => ({
-				player,
-				playingSplines: buildSplines(data.profitLossData[player.id]!, true),
-				notPlayingSplines: buildSplines(data.profitLossData[player.id]!, false)
-			})
-		)
+		}, [])
 	);
 </script>
 
 <Chart.Container config={chartConfig} class="min-h-[200px] w-full">
-	<LayerChart x="handNumber" y="value">
+	<LayerChart
+		data={chartData}
+		series={pageData.players.map((p) => ({ key: p.id.toString(), color: p.color }))}
+		x="handNumber"
+		tooltipContext={{ mode: 'quadtree-x' }}
+	>
 		<Svg>
 			<Axis placement="bottom" format="integer" />
 			<Axis placement="left" />
 
-			{#each playerSplines as { player, notPlayingSplines } (player.id)}
-				{#each notPlayingSplines as spline (spline[0]!.handNumber)}
-					<Spline
-						data={spline}
-						stroke={player.color}
-						strokeWidth={2}
-						stroke-dasharray="4 4"
-						opacity={0.4}
-					/>
-				{/each}
+			{#each pageData.players as player (player.id)}
+				{@const pIdStr = player.id.toString()}
+
+				<Spline
+					y={pIdStr}
+					defined={(d) => d[pIdStr] !== undefined}
+					stroke={player.color}
+					strokeWidth={2}
+					stroke-dasharray="4 4"
+					opacity={0.4}
+				/>
+
+				<Spline
+					y={pIdStr}
+					defined={(d, i) => {
+						const playedNow = d[`${pIdStr}_played`] === true;
+						// Look ahead 1 index: if they play on the NEXT hand, this hand's line needs to bridge to it
+						const playedNext = chartData[i + 1]?.[`${pIdStr}_played`] === true;
+
+						return d[pIdStr] !== undefined && (playedNow || playedNext);
+					}}
+					stroke={player.color}
+					strokeWidth={2}
+				/>
 			{/each}
 
-			{#each playerSplines as { player, playingSplines } (player.id)}
-				{#each playingSplines as spline (spline[0]!.handNumber)}
-					<Spline data={spline} stroke={player.color} strokeWidth={2} />
-				{/each}
-			{/each}
+			<Highlight lines />
 		</Svg>
+
+		<Tooltip.Root variant="none" class="pointer-events-none z-50">
+			{#snippet children({ data })}
+				{#if data}
+					<div
+						class="min-w-[120px] rounded-lg border-border/50 bg-background p-2.5 text-xs shadow-sm"
+					>
+						<div class="mb-1.5 border-b pb-1 font-medium text-muted-foreground">
+							Hand #{data.handNumber}
+						</div>
+
+						<div class="grid gap-1">
+							{#each pageData.players
+								.map( (p) => ({ name: p.displayName, color: p.color, value: data[p.id.toString()] as number | undefined, played: data[`${p.id}_played`] as boolean | undefined }) )
+								// Filter out any players who haven't populated a data coordinate here yet
+								.filter((item) => item.value !== undefined)
+								// SORT: Descending order (Highest profit down to biggest loss)
+								.sort((a, b) => (b.value ?? 0) - (a.value ?? 0)) as item (item.name)}
+								<div
+									class="flex items-center justify-between gap-4"
+									class:opacity-50={!item.played}
+								>
+									<div class="flex items-center gap-1.5">
+										<div class="h-2 w-2 rounded-full" style="background-color: {item.color}"></div>
+										<span class="font-normal text-muted-foreground">
+											{item.name}
+											{#if !item.played}
+												<span class="text-[10px] text-muted-foreground/70 italic">(out)</span>
+											{/if}
+										</span>
+									</div>
+									<span class="font-mono font-medium tracking-tight">
+										{item.value !== undefined
+											? item.value >= 0
+												? `+$${item.value}`
+												: `-$${Math.abs(item.value).toFixed(2)}`
+											: '0'}
+									</span>
+								</div>
+							{/each}
+						</div>
+					</div>
+				{/if}
+			{/snippet}
+		</Tooltip.Root>
 	</LayerChart>
 </Chart.Container>
