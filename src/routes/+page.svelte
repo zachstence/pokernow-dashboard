@@ -12,25 +12,22 @@
 	);
 
 	const chartData = $derived(
-		Array.from({ length: pageData.numHands }).reduce<Record<string, unknown>[]>((acc, _, i) => {
-			acc[i] = {
-				handNumber: i + 1
-			};
-			Object.keys(pageData.profitLossData).forEach((playerId) => {
-				const pid = parseInt(playerId);
-				const handData = pageData.profitLossData[pid]?.[i];
+		Array.from({ length: pageData.numHands }, (_, i) => {
+			const row: Record<string, unknown> = { handNumber: i + 1 };
+
+			for (const playerId in pageData.profitLossData) {
+				const handData = pageData.profitLossData[playerId]?.[i];
 				if (handData) {
-					acc[i]![playerId] = handData.value;
-					// Store the played flag globally keyed by player ID so we can access it during rendering
-					acc[i]![`${playerId}_played`] = handData.played;
+					row[playerId] = handData.value;
+					row[`${playerId}_played`] = handData.played;
 				}
-			});
-			return acc;
-		}, [])
+			}
+			return row;
+		})
 	);
 </script>
 
-<Chart.Container config={chartConfig} class="min-h-[200px] w-full">
+<Chart.Container config={chartConfig} class="ml-10 min-h-[350px] w-full">
 	<LayerChart
 		data={chartData}
 		series={pageData.players.map((p) => ({ key: p.id.toString(), color: p.color }))}
@@ -39,7 +36,7 @@
 	>
 		<Svg>
 			<Axis placement="bottom" format="integer" />
-			<Axis placement="left" />
+			<Axis placement="left" format={(v) => (v >= 0 ? `+$${v}` : `-$${Math.abs(v)}`)} />
 
 			{#each pageData.players as player (player.id)}
 				{@const pIdStr = player.id.toString()}
@@ -48,22 +45,22 @@
 					y={pIdStr}
 					defined={(d) => d[pIdStr] !== undefined}
 					stroke={player.color}
-					strokeWidth={2}
+					strokeWidth={1.5}
 					stroke-dasharray="4 4"
-					opacity={0.4}
+					opacity={0.3}
 				/>
 
 				<Spline
 					y={pIdStr}
-					defined={(d, i) => {
+					defined={(d, i, arr) => {
+						if (d[pIdStr] === undefined) return false;
 						const playedNow = d[`${pIdStr}_played`] === true;
-						// Look ahead 1 index: if they play on the NEXT hand, this hand's line needs to bridge to it
-						const playedNext = chartData[i + 1]?.[`${pIdStr}_played`] === true;
-
-						return d[pIdStr] !== undefined && (playedNow || playedNext);
+						// Use the internal array pointer 'arr' safely instead of tracking chartData
+						const playedNext = arr[i + 1]?.[`${pIdStr}_played`] === true;
+						return playedNow || playedNext;
 					}}
 					stroke={player.color}
-					strokeWidth={2}
+					strokeWidth={2.5}
 				/>
 			{/each}
 
@@ -74,38 +71,40 @@
 			{#snippet children({ data })}
 				{#if data}
 					<div
-						class="min-w-[120px] rounded-lg border-border/50 bg-background p-2.5 text-xs shadow-sm"
+						class="min-w-[140px] rounded-lg border border-border/60 bg-background p-2.5 text-xs shadow-md"
 					>
 						<div class="mb-1.5 border-b pb-1 font-medium text-muted-foreground">
 							Hand #{data.handNumber}
 						</div>
 
-						<div class="grid gap-1">
+						<div class="grid gap-1.5">
 							{#each pageData.players
-								.map( (p) => ({ name: p.displayName, color: p.color, value: data[p.id.toString()] as number | undefined, played: data[`${p.id}_played`] as boolean | undefined }) )
-								// Filter out any players who haven't populated a data coordinate here yet
+								.map((p) => {
+									const pIdStr = p.id.toString();
+									return { name: p.displayName, color: p.color, value: data[pIdStr] as number | undefined, played: data[`${pIdStr}_played`] as boolean | undefined };
+								})
 								.filter((item) => item.value !== undefined)
-								// SORT: Descending order (Highest profit down to biggest loss)
 								.sort((a, b) => (b.value ?? 0) - (a.value ?? 0)) as item (item.name)}
 								<div
-									class="flex items-center justify-between gap-4"
-									class:opacity-50={!item.played}
+									class="flex items-center justify-between gap-4 transition-opacity duration-150"
+									class:opacity-40={!item.played}
 								>
 									<div class="flex items-center gap-1.5">
 										<div class="h-2 w-2 rounded-full" style="background-color: {item.color}"></div>
-										<span class="font-normal text-muted-foreground">
+										<span class="font-normal text-foreground">
 											{item.name}
 											{#if !item.played}
-												<span class="text-[10px] text-muted-foreground/70 italic">(out)</span>
+												<span
+													class="text-[10px] font-light text-muted-foreground normal-case italic"
+													>(out)</span
+												>
 											{/if}
 										</span>
 									</div>
-									<span class="font-mono font-medium tracking-tight">
-										{item.value !== undefined
-											? item.value >= 0
-												? `+$${item.value}`
-												: `-$${Math.abs(item.value).toFixed(2)}`
-											: '0'}
+									<span class="font-mono tracking-tight">
+										{item.value! >= 0
+											? `+$${item.value!.toFixed(2)}`
+											: `-$${Math.abs(item.value!).toFixed(2)}`}
 									</span>
 								</div>
 							{/each}
