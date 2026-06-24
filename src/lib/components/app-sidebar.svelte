@@ -1,158 +1,43 @@
-<script lang="ts" module>
-	// sample data
+<script lang="ts">
+	import * as Collapsible from '$lib/components/ui/collapsible/index.js';
+	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
+	import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
+	import type { ComponentProps } from 'svelte';
+	import { resolve } from '$app/paths';
+	import type { PlayersFile } from '$lib/server/transform-data/loadPlayersFile';
+	import favicon from '$lib/assets/favicon.svg?raw';
 
-	// This is sample data.
-	const data = {
+	type Props = {
+		sessions: {
+			title: string;
+			url: string;
+		};
+		players: PlayersFile;
+	};
+
+	let {
+		ref = $bindable(null),
+		sessions,
+		players,
+		...restProps
+	}: ComponentProps<typeof Sidebar.Root> & Props = $props();
+
+	const data = $derived({
 		navMain: [
 			{
-				title: "Getting Started",
-				url: "#",
-				items: [
-					{
-						title: "Installation",
-						url: "#",
-					},
-					{
-						title: "Project Structure",
-						url: "#",
-					},
-				],
+				title: 'Overview',
+				url: resolve('/')
 			},
 			{
-				title: "Build Your Application",
-				url: "#",
-				items: [
-					{
-						title: "Routing",
-						url: "#",
-					},
-					{
-						title: "Data Fetching",
-						url: "#",
-						isActive: true,
-					},
-					{
-						title: "Rendering",
-						url: "#",
-					},
-					{
-						title: "Caching",
-						url: "#",
-					},
-					{
-						title: "Styling",
-						url: "#",
-					},
-					{
-						title: "Optimizing",
-						url: "#",
-					},
-					{
-						title: "Configuring",
-						url: "#",
-					},
-					{
-						title: "Testing",
-						url: "#",
-					},
-					{
-						title: "Authentication",
-						url: "#",
-					},
-					{
-						title: "Deploying",
-						url: "#",
-					},
-					{
-						title: "Upgrading",
-						url: "#",
-					},
-					{
-						title: "Examples",
-						url: "#",
-					},
-				],
+				title: 'Sessions',
+				items: sessions
 			},
 			{
-				title: "API Reference",
-				url: "#",
-				items: [
-					{
-						title: "Components",
-						url: "#",
-					},
-					{
-						title: "File Conventions",
-						url: "#",
-					},
-					{
-						title: "Functions",
-						url: "#",
-					},
-					{
-						title: "next.config.js Options",
-						url: "#",
-					},
-					{
-						title: "CLI",
-						url: "#",
-					},
-					{
-						title: "Edge Runtime",
-						url: "#",
-					},
-				],
-			},
-			{
-				title: "Architecture",
-				url: "#",
-				items: [
-					{
-						title: "Accessibility",
-						url: "#",
-					},
-					{
-						title: "Fast Refresh",
-						url: "#",
-					},
-					{
-						title: "Next.js Compiler",
-						url: "#",
-					},
-					{
-						title: "Supported Browsers",
-						url: "#",
-					},
-					{
-						title: "Turbopack",
-						url: "#",
-					},
-				],
-			},
-			{
-				title: "Community",
-				url: "#",
-				items: [
-					{
-						title: "Contribution Guide",
-						url: "#",
-					},
-				],
-			},
-		],
-	};
-</script>
-
-<script lang="ts">
-	import SearchForm from "./search-form.svelte";
-	import * as Collapsible from "$lib/components/ui/collapsible/index.js";
-	import * as Sidebar from "$lib/components/ui/sidebar/index.js";
-	import GalleryVerticalEndIcon from "@lucide/svelte/icons/gallery-vertical-end";
-	import MinusIcon from "@lucide/svelte/icons/minus";
-	import PlusIcon from "@lucide/svelte/icons/plus";
-	import type { ComponentProps } from "svelte";
-
-	let { ref = $bindable(null), ...restProps }: ComponentProps<typeof Sidebar.Root> = $props();
+				title: 'Players',
+				items: players.map((p) => ({ title: p.displayName, url: resolve(`/players/${p.id}`) }))
+			}
+		]
+	});
 </script>
 
 <Sidebar.Root bind:ref {...restProps}>
@@ -161,61 +46,65 @@
 			<Sidebar.MenuItem>
 				<Sidebar.MenuButton size="lg">
 					{#snippet child({ props })}
-						<a href="##" {...props}>
+						<a href={resolve('/')} {...props}>
 							<div
-								class="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg"
+								class="flex aspect-square size-8 items-center justify-center text-black *:size-full!"
 							>
-								<GalleryVerticalEndIcon class="size-4" />
+								<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+								{@html favicon}
 							</div>
 							<div class="flex flex-col gap-0.5 leading-none">
-								<span class="font-medium">Documentation</span>
-								<span class="">v1.0.0</span>
+								<span class="font-medium">ZenAI Poker Dashboard</span>
 							</div>
 						</a>
 					{/snippet}
 				</Sidebar.MenuButton>
 			</Sidebar.MenuItem>
 		</Sidebar.Menu>
-		<SearchForm />
 	</Sidebar.Header>
 	<Sidebar.Content>
 		<Sidebar.Group>
 			<Sidebar.Menu>
 				{#each data.navMain as item, index (item.title)}
-					<Collapsible.Root open={index === 1} class="group/collapsible">
-						<Sidebar.MenuItem>
-							<Collapsible.Trigger>
-								{#snippet child({ props })}
-									<Sidebar.MenuButton {...props}>
-										{item.title}
-										<PlusIcon
-											class="ms-auto group-data-[state=open]/collapsible:hidden"
-										/>
-										<MinusIcon
-											class="ms-auto group-data-[state=closed]/collapsible:hidden"
-										/>
-									</Sidebar.MenuButton>
-								{/snippet}
-							</Collapsible.Trigger>
-							{#if item.items?.length}
-								<Collapsible.Content>
-									<Sidebar.MenuSub>
-										{#each item.items as subItem (subItem.title)}
-											<Sidebar.MenuSubItem>
-												<Sidebar.MenuSubButton isActive={subItem.isActive}>
-													{#snippet child({ props })}
-														<a href={subItem.url} {...props}
-															>{subItem.title}</a
-														>
-													{/snippet}
-												</Sidebar.MenuSubButton>
-											</Sidebar.MenuSubItem>
-										{/each}
-									</Sidebar.MenuSub>
-								</Collapsible.Content>
-							{/if}
-						</Sidebar.MenuItem>
-					</Collapsible.Root>
+					{#if item.items}
+						<Collapsible.Root open={index === 1} class="group/collapsible">
+							<Sidebar.MenuItem>
+								<Collapsible.Trigger>
+									{#snippet child({ props })}
+										<Sidebar.MenuButton {...props}>
+											{item.title}
+											<ChevronRightIcon
+												class="ms-auto transition-transform group-data-[state=open]/collapsible:rotate-90"
+											/>
+										</Sidebar.MenuButton>
+									{/snippet}
+								</Collapsible.Trigger>
+								{#if item.items?.length}
+									<Collapsible.Content>
+										<Sidebar.MenuSub>
+											{#each item.items as subItem (subItem.title)}
+												<Sidebar.MenuSubItem>
+													<Sidebar.MenuSubButton isActive={subItem.isActive}>
+														{#snippet child({ props })}
+															<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
+															<a href={subItem.url} {...props}>{subItem.title}</a>
+														{/snippet}
+													</Sidebar.MenuSubButton>
+												</Sidebar.MenuSubItem>
+											{/each}
+										</Sidebar.MenuSub>
+									</Collapsible.Content>
+								{/if}
+							</Sidebar.MenuItem>
+						</Collapsible.Root>
+					{:else}
+						<Sidebar.MenuButton>
+							{#snippet child({ props })}
+								<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
+								<a href={item.url} {...props}>{item.title}</a>
+							{/snippet}
+						</Sidebar.MenuButton>
+					{/if}
 				{/each}
 			</Sidebar.Menu>
 		</Sidebar.Group>
