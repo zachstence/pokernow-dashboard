@@ -1,13 +1,16 @@
 import { buildProfitLossData } from './buildProfitLossData';
 import { convertStack } from './convertStack';
 import { loadHandsFile } from './loadHandsFile';
+import { loadHandsFiles } from './loadHandsFiles';
 import { loadPlayersFile } from './loadPlayersFile';
 import { round } from './round';
 
 const players = await loadPlayersFile();
 // console.log({ players });
 
-const handsFile = await loadHandsFile('./data/poker-now-hands-game-pglXMnDTq51E3NjE7DsBSAhVj.json');
+await loadHandsFiles();
+
+// const handsFile = await loadHandsFile('./data/poker-now-hands-game-pglXMnDTq51E3NjE7DsBSAhVj.json');
 // console.log({ handsFile });
 
 // console.log('===== HAND 0 =====');
@@ -19,9 +22,9 @@ const handsFile = await loadHandsFile('./data/poker-now-hands-game-pglXMnDTq51E3
 // const endingBalances = computeHandEndingBalances(players, handsFile.hands[0]!);
 // console.log({ endingBalances });
 
-const profitLossData = await buildProfitLossData(players, [handsFile]);
+// const profitLossData = await buildProfitLossData(players, [handsFile]);
 
-const numHands = Object.values(profitLossData)[0]!.length;
+// const numHands = Object.values(profitLossData)[0]!.length;
 
 // Log P/L data for each player
 // const header = `        ${Object.keys(profitLossData)
@@ -43,41 +46,41 @@ const numHands = Object.values(profitLossData)[0]!.length;
 // 	console.log(line);
 // }
 
-// Log actual vs expected hand starting stack
-const spotFixes: { [handIndex: number]: number } = {
-	// 74: -0.1,
-	// 82: -0.1,
-	// 86: -0.1,
-	// 139: -0.1
-};
+// // Log actual vs expected hand starting stack
+// const spotFixes: { [handIndex: number]: number } = {
+// 	// 74: -0.1,
+// 	// 82: -0.1,
+// 	// 86: -0.1,
+// 	// 139: -0.1
+// };
 
-const player = players.find((p) => p.displayName === 'Zach')!;
-const playerId = player.id;
-const pokerNowPlayerId = player.pokerNowPlayerIds[0]!;
+// const player = players.find((p) => p.displayName === 'Zach')!;
+// const playerId = player.id;
+// const pokerNowPlayerId = player.pokerNowPlayerIds[0]!;
 
-const startingBalance = 25;
-const playerData = profitLossData[playerId]!;
+// const startingBalance = 25;
+// const playerData = profitLossData[playerId]!;
 
-for (let h = 0; h < numHands - 1; h++) {
-	for (const [handIndex, diff] of Object.entries(spotFixes)) {
-		if (h > parseInt(handIndex)) {
-			playerData[h]!.value += diff;
-		}
-	}
+// for (let h = 0; h < numHands - 1; h++) {
+// 	for (const [handIndex, diff] of Object.entries(spotFixes)) {
+// 		if (h > parseInt(handIndex)) {
+// 			playerData[h]!.value += diff;
+// 		}
+// 	}
 
-	const actualBalance = round(startingBalance + playerData[h]!.value, 2);
+// 	const actualBalance = round(startingBalance + playerData[h]!.value, 2);
 
-	const handPlayer = handsFile.hands[h]!.players.find((p) => p.id === pokerNowPlayerId);
-	if (handPlayer) {
-		const expectedBalance = convertStack(handPlayer!.stack, handsFile.hands[h]!.cents);
-		const matches = actualBalance === expectedBalance;
-		console.log(
-			`${(h + 1).toString().padStart(3, ' ')} | ${actualBalance.toFixed(2).padStart(6, ' ')} | ${expectedBalance.toFixed(2).padStart(6, ' ')} | ${matches ? '✅' : '❌'}`
-		);
-		if (!matches) throw new Error();
-	} else {
-		console.log(
-			`${(h + 1).toString().padStart(3, ' ')} | ${actualBalance.toFixed(2).padStart(6, ' ')} | not in hand`
-		);
-	}
-}
+// 	const handPlayer = handsFile.hands[h]!.players.find((p) => p.id === pokerNowPlayerId);
+// 	if (handPlayer) {
+// 		const expectedBalance = convertStack(handPlayer!.stack, handsFile.hands[h]!.cents);
+// 		const matches = actualBalance === expectedBalance;
+// 		console.log(
+// 			`${(h + 1).toString().padStart(3, ' ')} | ${actualBalance.toFixed(2).padStart(6, ' ')} | ${expectedBalance.toFixed(2).padStart(6, ' ')} | ${matches ? '✅' : '❌'}`
+// 		);
+// 		if (!matches) throw new Error();
+// 	} else {
+// 		console.log(
+// 			`${(h + 1).toString().padStart(3, ' ')} | ${actualBalance.toFixed(2).padStart(6, ' ')} | not in hand`
+// 		);
+// 	}
+// }

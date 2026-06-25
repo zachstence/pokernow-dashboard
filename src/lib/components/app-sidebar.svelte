@@ -6,12 +6,13 @@
 	import { resolve } from '$app/paths';
 	import type { PlayersFile } from '$lib/server/transform-data/loadPlayersFile';
 	import favicon from '$lib/assets/favicon.svg?raw';
+	import { page } from '$app/state';
 
 	type Props = {
 		sessions: {
 			title: string;
 			url: string;
-		};
+		}[];
 		players: PlayersFile;
 	};
 
@@ -65,9 +66,9 @@
 	<Sidebar.Content>
 		<Sidebar.Group>
 			<Sidebar.Menu>
-				{#each data.navMain as item, index (item.title)}
+				{#each data.navMain as item (item.title)}
 					{#if item.items}
-						<Collapsible.Root open={index === 1} class="group/collapsible">
+						<Collapsible.Root open class="group/collapsible">
 							<Sidebar.MenuItem>
 								<Collapsible.Trigger>
 									{#snippet child({ props })}
@@ -84,7 +85,7 @@
 										<Sidebar.MenuSub>
 											{#each item.items as subItem (subItem.title)}
 												<Sidebar.MenuSubItem>
-													<Sidebar.MenuSubButton isActive={subItem.isActive}>
+													<Sidebar.MenuSubButton isActive={page.url.pathname === subItem.url}>
 														{#snippet child({ props })}
 															<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
 															<a href={subItem.url} {...props}>{subItem.title}</a>
@@ -98,7 +99,7 @@
 							</Sidebar.MenuItem>
 						</Collapsible.Root>
 					{:else}
-						<Sidebar.MenuButton>
+						<Sidebar.MenuButton isActive={page.url.pathname === item.url}>
 							{#snippet child({ props })}
 								<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
 								<a href={item.url} {...props}>{item.title}</a>
