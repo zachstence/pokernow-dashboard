@@ -62,6 +62,15 @@ const HandsLabelsSchema = z.record(
 	)
 );
 
+const CollectEventPayloadSchema = z.object({
+	type: z.literal(10).transform(() => 'Collect' as const),
+	seat: z.int(),
+	value: z.int(),
+	pot: z.int(),
+	position: z.int()
+});
+export type CollectEventPayload = z.infer<typeof CollectEventPayloadSchema>;
+
 const PayloadSchema = z.discriminatedUnion('type', [
 	z.object({
 		type: z.literal(0).transform(() => 'Check' as const),
@@ -116,13 +125,7 @@ const PayloadSchema = z.discriminatedUnion('type', [
 		cards: z.array(CardSchema),
 		handsLabels: HandsLabelsSchema
 	}),
-	z.object({
-		type: z.literal(10).transform(() => 'Collect' as const),
-		seat: z.int(),
-		value: z.int(),
-		pot: z.int(),
-		position: z.int()
-	}),
+	CollectEventPayloadSchema,
 	z.object({
 		type: z.literal(11).transform(() => 'Fold' as const),
 		seat: z.int()

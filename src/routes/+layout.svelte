@@ -5,6 +5,7 @@
 	import * as Sidebar from '$lib/components/ui/sidebar';
 	import AppSidebar from '$lib/components/app-sidebar.svelte';
 	import type { LayoutProps } from './$types';
+	import * as Tooltip from '$lib/components/ui/tooltip';
 
 	let { children, data }: LayoutProps = $props();
 </script>
@@ -15,9 +16,11 @@
 	<title>ZenAI Poker Dashboard</title>
 </svelte:head>
 
-<Sidebar.Provider>
-	<AppSidebar players={data.players} sessions={data.sessions} />
-	<Sidebar.Inset>
-		{@render children()}
-	</Sidebar.Inset>
-</Sidebar.Provider>
+<Tooltip.Provider>
+	<Sidebar.Provider>
+		<AppSidebar players={data.players} sessions={data.sessions} />
+		<Sidebar.Inset>
+			{@render children()}
+		</Sidebar.Inset>
+	</Sidebar.Provider>
+</Tooltip.Provider>
