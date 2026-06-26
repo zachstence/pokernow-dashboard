@@ -22,13 +22,7 @@ export const buildProfitLossData = (
 ): ProfitLossData => {
 	const data: ProfitLossData = {};
 	for (const player of players) {
-		data[player.id] = [
-			{
-				handNumber: 0,
-				value: 0,
-				played: false
-			}
-		];
+		data[player.id] = [];
 	}
 
 	for (const file of handsFiles) {
@@ -38,7 +32,7 @@ export const buildProfitLossData = (
 
 			for (const player of players) {
 				const playerData = data[player.id]!;
-				const lastValue = playerData[playerData.length - 1]!.value;
+				const lastValue = playerData[playerData.length - 1]?.value ?? 0;
 
 				const handPlayer = hand.players.find(
 					(p) => pokerNowPlayerIdToPlayerId(players, p.id) === player.id
@@ -64,9 +58,8 @@ export const buildProfitLossData = (
 					playerData[playerData.length - 1]!.value += postedMissingSmallBlindDiff;
 				}
 
-				const prev = playerData[playerData.length - 1]!.value;
 				const diff = convertStack(handDiff, hand.cents);
-				const value = round(prev + diff, 2);
+				const value = round(lastValue + diff, 2);
 
 				playerData.push({
 					handNumber: h + 1,
