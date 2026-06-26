@@ -15,6 +15,7 @@
 	import * as Card from '$lib/components/ui/card';
 	import Value from '$lib/components/Value.svelte';
 	import ProfitLossTable from '$lib/components/PlayerTable.svelte';
+	import { createRawSnippet } from 'svelte';
 
 	const { data: pageData }: PageProps = $props();
 
@@ -140,14 +141,27 @@
 
 						{#each pageData.players as player (player.id)}
 							{@const pIdStr = player.id.toString()}
+							{@const dim =
+								chartContext &&
+								chartContext.series.highlightKey &&
+								chartContext.series.highlightKey !== pIdStr}
 
 							<Spline
 								y={pIdStr}
-								defined={(d: { [x: string]: undefined }) => d[pIdStr] !== undefined}
+								defined={(
+									d: { [x: string]: boolean },
+									i: number,
+									arr: { [x: string]: { [x: string]: boolean } }
+								) => {
+									if (d[pIdStr] === undefined) return false;
+									const didntPlayNow = d[`${pIdStr}_played`] === false;
+									const didntPlayNext = arr[i + 1]?.[`${pIdStr}_played`] === false;
+									return didntPlayNow || didntPlayNext;
+								}}
 								stroke={player.color}
 								strokeWidth={1.5}
 								stroke-dasharray="4 4"
-								opacity={0.3}
+								opacity={dim ? 0.1 : 0.3}
 							/>
 
 							<Spline
@@ -165,10 +179,23 @@
 								}}
 								stroke={player.color}
 								strokeWidth={2.5}
+								opacity={dim ? 0.15 : 1}
 							/>
 						{/each}
 
-						<Highlight points lines />
+						<Highlight
+							points={createRawSnippet((points) => ({
+								render() {
+									console.log('points', points);
+									return '<circle />';
+								}
+							}))}
+							lines
+							axis="both"
+							y={(d) => {
+								console.log('y', d);
+							}}
+						/>
 					</Svg>
 
 					<Tooltip.Root variant="none" class="pointer-events-none z-50">
