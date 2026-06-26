@@ -40,7 +40,7 @@
 		"[&_.lc-line]:stroke-border/50",
 
 		// by default, layerchart shows a line intersecting the point when hovering, this hides that
-		"[&_.lc-highlight-line]:stroke-0",
+		// "[&_.lc-highlight-line]:stroke-0",
 
 		// by default, when you hover a point on a stacked series chart, it will drop the opacity
 		// of the other series, this overrides that

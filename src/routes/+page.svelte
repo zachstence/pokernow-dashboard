@@ -168,7 +168,7 @@
 							/>
 						{/each}
 
-						<Highlight lines />
+						<Highlight points lines />
 					</Svg>
 
 					<Tooltip.Root variant="none" class="pointer-events-none z-50">
