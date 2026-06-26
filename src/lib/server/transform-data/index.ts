@@ -78,8 +78,6 @@ export const computeStats = async (): Promise<Stats> => {
 		return playerStats;
 	}, {});
 
-	console.log(playerStats);
-
 	return {
 		players,
 		handsFiles,
@@ -108,6 +106,9 @@ const computePlayerStats = (
 	let threeBetHands = 0;
 	let postflopRaises = 0;
 	let postflopCalls = 0;
+	let flopsSeen = 0;
+	let showdownsSeen = 0;
+	let showdownsWon = 0;
 
 	for (const handsFile of handsFiles) {
 		let playedSession = false;
@@ -123,18 +124,26 @@ const computePlayerStats = (
 			let phase: 'preflop' | 'postflop' = 'preflop';
 			let preflopRaiseCount = 1; // Big Blind is the first raise
 
-			// preflop stats
 			let isVpip = false;
 			let isPfr = false;
 			let isThreeBetOpportunity = false;
 			let isThreeBet = false;
 
 			for (const event of hand.events) {
+				const isEventForPlayer = 'seat' in event.payload && event.payload.seat === handPlayer.seat;
+
 				if (event.payload.type === 'DealBoardCard' && event.payload.turn === 'Flop') {
 					phase = 'postflop';
+					flopsSeen++;
 				}
 
-				const isEventForPlayer = 'seat' in event.payload && event.payload.seat === handPlayer.seat;
+				if (event.payload.type === 'HandFinished') {
+					showdownsSeen++;
+				}
+
+				if (isEventForPlayer && event.payload.type === 'Fold') {
+					break;
+				}
 
 				if (phase === 'preflop') {
 					if (isEventForPlayer) {
@@ -162,6 +171,8 @@ const computePlayerStats = (
 							postflopCalls++;
 						} else if (event.payload.type === 'Raise') {
 							postflopRaises++;
+						} else if (event.payload.type === 'Collect') {
+							showdownsWon++;
 						}
 					}
 				}
@@ -174,6 +185,7 @@ const computePlayerStats = (
 				if (isThreeBet) threeBetHands++;
 			}
 		}
+
 		if (playedSession) playedSessions++;
 	}
 
@@ -184,7 +196,7 @@ const computePlayerStats = (
 		pfr: pfrHands / playedHands,
 		threeBet: threeBetHands / threeBetOpportunities,
 		aggFactor: postflopRaises / postflopCalls,
-		wtsd: 0,
-		wsd: 0
+		wtsd: showdownsSeen / flopsSeen,
+		wsd: showdownsWon / showdownsSeen
 	};
 };

@@ -28,6 +28,15 @@
 			return row;
 		})
 	);
+
+	const profitByPlayer = $derived(
+		Object.fromEntries(
+			Object.entries(pageData.overview.profitLossData).map(([playerId, playerData]) => [
+				parseInt(playerId),
+				playerData[playerData.length - 1]!.value
+			])
+		)
+	);
 </script>
 
 <div class="grid grid-cols-12 gap-2 p-2">
@@ -67,7 +76,7 @@
 		</Card.Content>
 	</Card.Root>
 
-	<ProfitLossTable players={pageData.players} playerStats={pageData.playerStats} />
+	<ProfitLossTable players={pageData.players} playerStats={pageData.playerStats} {profitByPlayer} />
 
 	<Chart.Container config={chartConfig} class="col-span-12 ml-10 min-h-[350px] w-full">
 		<LayerChart

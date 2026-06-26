@@ -15,21 +15,25 @@
 	type Props = {
 		players: PlayersFile;
 		playerStats: { [playerId: number]: PlayerStats };
+		profitByPlayer: { [playerId: number]: number };
 	};
-	let { players, playerStats }: Props = $props();
+	let { players, playerStats, profitByPlayer }: Props = $props();
 
 	type Row = {
 		player: {
 			displayName: string;
 			color: string;
 		};
+		profit: number;
 	} & PlayerStats;
 
 	const data: Row[] = $derived(
 		players.map((player) => {
 			const stats = playerStats[player.id]!;
+			const profit = profitByPlayer[player.id]!;
 			return {
 				...stats,
+				profit,
 				player: {
 					displayName: player.displayName,
 					color: player.color
@@ -43,6 +47,23 @@
 			accessorKey: 'player',
 			header: 'Player',
 			cell: ({ row }) => renderComponent(PlayerNameAndColor, { player: row.original.player })
+		},
+		{
+			accessorKey: 'sessionsPlayed',
+			header: 'Sessions'
+		},
+		{
+			accessorKey: 'handsPlayed',
+			header: 'Hands'
+		},
+		{
+			accessorKey: 'profit',
+			header: 'Profit/Loss',
+			cell: ({
+				row: {
+					original: { profit }
+				}
+			}) => (profit >= 0 ? `+$${profit.toFixed(2)}` : `-$${Math.abs(profit).toFixed(2)}`)
 		},
 		{
 			accessorKey: 'vpip',
@@ -63,6 +84,16 @@
 			accessorKey: 'aggFactor',
 			header: 'AF',
 			cell: ({ row }) => `${row.original.aggFactor.toFixed(2)}`
+		},
+		{
+			accessorKey: 'wtsd',
+			header: 'WTSD',
+			cell: ({ row }) => `${(100 * row.original.wtsd).toFixed(0)}%`
+		},
+		{
+			accessorKey: 'wsd',
+			header: 'WSD',
+			cell: ({ row }) => `${(100 * row.original.wsd).toFixed(0)}%`
 		}
 	];
 
