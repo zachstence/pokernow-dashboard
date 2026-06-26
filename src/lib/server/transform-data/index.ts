@@ -3,6 +3,18 @@ import { convertStack } from './convertStack';
 import type { CollectEventPayload, HandEvent, HandsFile } from './loadHandsFile';
 import { loadHandsFiles } from './loadHandsFiles';
 import { loadPlayersFile, type PlayersFile } from './loadPlayersFile';
+import { pokerNowPlayerIdToPlayerId } from './pokerNowPlayerIdToPlayerId';
+
+export type PlayerStats = {
+	sessionsPlayed: number;
+	handsPlayed: number;
+	vpip: number;
+	pfr: number;
+	threeBet: number;
+	aggFactor: number;
+	wtsd: number;
+	wsd: number;
+};
 
 type Stats = {
 	players: PlayersFile;
@@ -16,6 +28,10 @@ type Stats = {
 		totalPlayers: number;
 		biggestPot: number;
 		profitLossData: ProfitLossData;
+	};
+
+	playerStats: {
+		[playerId: number]: PlayerStats;
 	};
 };
 
@@ -56,6 +72,14 @@ export const computeStats = async (): Promise<Stats> => {
 		return biggestPot;
 	}, 0);
 
+	const playerStats = players.reduce<{ [playerId: number]: PlayerStats }>((playerStats, player) => {
+		const stats = computePlayerStats(players, player.id, handsFiles);
+		playerStats[player.id] = stats;
+		return playerStats;
+	}, {});
+
+	console.log(playerStats);
+
 	return {
 		players,
 		handsFiles,
@@ -66,6 +90,57 @@ export const computeStats = async (): Promise<Stats> => {
 			totalPlayers,
 			biggestPot,
 			profitLossData
+		},
+		playerStats
+	};
+};
+
+const computePlayerStats = (
+	players: PlayersFile,
+	playerId: number,
+	handsFiles: HandsFile[]
+): PlayerStats => {
+	let playedHands = 0;
+	let vpipHands = 0;
+	let pfrHands = 0;
+
+	for (const handsFile of handsFiles) {
+		for (const hand of handsFile.hands) {
+			const handPlayer = hand.players.find(
+				(hp) => pokerNowPlayerIdToPlayerId(players, hp.id) === playerId
+			);
+			if (!handPlayer) continue;
+
+			playedHands++;
+
+			let vpip = false;
+			let pfr = false;
+			for (const event of hand.events) {
+				if (event.payload.type === 'DealBoardCard') break;
+				const isEventForPlayer = 'seat' in event.payload && event.payload.seat === handPlayer.seat;
+				if (!isEventForPlayer) continue;
+
+				if (event.payload.type === 'Call' || event.payload.type === 'Raise') {
+					vpip = true;
+				}
+				if (event.payload.type === 'Raise') {
+					pfr = true;
+				}
+			}
+
+			if (vpip) vpipHands++;
+			if (pfr) pfrHands++;
 		}
+	}
+
+	return {
+		sessionsPlayed: 0,
+		handsPlayed: 0,
+		vpip: vpipHands / playedHands,
+		pfr: pfrHands / playedHands,
+		threeBet: 0,
+		aggFactor: 0,
+		wtsd: 0,
+		wsd: 0
 	};
 };

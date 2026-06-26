@@ -4,6 +4,7 @@
 	import type { PageProps } from './$types';
 	import * as Card from '$lib/components/ui/card';
 	import Value from '$lib/components/Value.svelte';
+	import ProfitLossTable from '$lib/components/PlayerTable.svelte';
 
 	const { data: pageData }: PageProps = $props();
 
@@ -65,6 +66,8 @@
 			<Value class="text-center" value={pageData.overview.biggestPot} prefix="$" />
 		</Card.Content>
 	</Card.Root>
+
+	<ProfitLossTable players={pageData.players} playerStats={pageData.playerStats} />
 
 	<Chart.Container config={chartConfig} class="col-span-12 ml-10 min-h-[350px] w-full">
 		<LayerChart
