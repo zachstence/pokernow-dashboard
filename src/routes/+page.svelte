@@ -2,6 +2,7 @@
 	import * as Chart from '$lib/components/ui/chart/index.js';
 	import {
 		Axis,
+		Circle,
 		Frame,
 		Grid,
 		Highlight,
@@ -9,7 +10,8 @@
 		Spline,
 		Svg,
 		Tooltip,
-		type ChartState
+		type ChartState,
+		type HighlightPointData
 	} from 'layerchart';
 	import type { PageProps } from './$types';
 	import * as Card from '$lib/components/ui/card';
@@ -161,7 +163,7 @@
 								stroke={player.color}
 								strokeWidth={1.5}
 								stroke-dasharray="4 4"
-								opacity={dim ? 0.1 : 0.3}
+								class={dim ? 'opacity-10 saturate-0' : 'opacity-30'}
 							/>
 
 							<Spline
@@ -179,23 +181,34 @@
 								}}
 								stroke={player.color}
 								strokeWidth={2.5}
-								opacity={dim ? 0.15 : 1}
+								class="transition-opacity {dim ? 'opacity-15 saturate-0' : ''}"
 							/>
 						{/each}
 
-						<Highlight
-							points={createRawSnippet((points) => ({
-								render() {
-									console.log('points', points);
-									return '<circle />';
-								}
-							}))}
-							lines
-							axis="both"
-							y={(d) => {
-								console.log('y', d);
-							}}
-						/>
+						<Highlight lines>
+							{#snippet points({ points })}
+								{#each points as point}
+									{@const pIdStr = (point as unknown as { seriesKey: string }).seriesKey}
+									{@const dim =
+										chartContext &&
+										chartContext.series.highlightKey &&
+										chartContext.series.highlightKey !== pIdStr}
+									<Circle
+										cx={point.x}
+										cy={point.y}
+										r={4}
+										fill={point.fill}
+										class="transition-opacity {dim ? 'opacity-0' : ''}"
+										onmouseenter={() => {
+											chartContext!.series.highlightKey = pIdStr;
+										}}
+										onmouseleave={() => {
+											chartContext!.series.highlightKey = null;
+										}}
+									/>
+								{/each}
+							{/snippet}
+						</Highlight>
 					</Svg>
 
 					<Tooltip.Root variant="none" class="pointer-events-none z-50">
@@ -212,13 +225,15 @@
 										{#each pageData.players
 											.map((p) => {
 												const pIdStr = p.id.toString();
-												return { name: p.displayName, color: p.color, value: data[pIdStr] as number | undefined, played: data[`${pIdStr}_played`] as boolean | undefined };
+												return { id: pIdStr, name: p.displayName, color: p.color, value: data[pIdStr] as number | undefined, played: data[`${pIdStr}_played`] as boolean | undefined };
 											})
 											.filter((item) => item.value !== undefined)
 											.sort((a, b) => (b.value ?? 0) - (a.value ?? 0)) as item (item.name)}
+											{@const active = chartContext?.series.highlightKey === item.id}
 											<div
-												class="flex items-center justify-between gap-4 transition-opacity duration-150"
+												class="-my-0.px -mx-1 flex items-center justify-between gap-4 rounded-sm px-1 py-px transition-all duration-150"
 												class:opacity-40={!item.played}
+												class:bg-muted={active}
 											>
 												<div class="flex items-center gap-1.5">
 													<div
