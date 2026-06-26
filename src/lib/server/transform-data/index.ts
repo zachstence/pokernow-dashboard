@@ -100,45 +100,72 @@ const computePlayerStats = (
 	playerId: number,
 	handsFiles: HandsFile[]
 ): PlayerStats => {
+	let playedSessions = 0;
 	let playedHands = 0;
 	let vpipHands = 0;
 	let pfrHands = 0;
+	let threeBetOpportunities = 0;
+	let threeBetHands = 0;
 
 	for (const handsFile of handsFiles) {
+		let playedSession = false;
 		for (const hand of handsFile.hands) {
 			const handPlayer = hand.players.find(
 				(hp) => pokerNowPlayerIdToPlayerId(players, hp.id) === playerId
 			);
 			if (!handPlayer) continue;
 
+			playedSession = true;
 			playedHands++;
 
-			let vpip = false;
-			let pfr = false;
-			for (const event of hand.events) {
-				if (event.payload.type === 'DealBoardCard') break;
-				const isEventForPlayer = 'seat' in event.payload && event.payload.seat === handPlayer.seat;
-				if (!isEventForPlayer) continue;
+			let raiseCount = 1; // Big Blind is the first raise
+			let isVpip = false;
+			let isPfr = false;
+			let isThreeBetOpportunity = false;
+			let isThreeBet = false;
 
-				if (event.payload.type === 'Call' || event.payload.type === 'Raise') {
-					vpip = true;
+			for (const event of hand.events) {
+				// Only consider preflop events
+				if (event.payload.type === 'DealBoardCard') break;
+
+				const isEventForPlayer = 'seat' in event.payload && event.payload.seat === handPlayer.seat;
+				if (isEventForPlayer) {
+					if (raiseCount === 2) {
+						isThreeBetOpportunity = true;
+					}
+
+					if (event.payload.type === 'Call') {
+						isVpip = true;
+					} else if (event.payload.type === 'Raise') {
+						isVpip = true;
+						isPfr = true;
+						if (isThreeBetOpportunity) {
+							isThreeBet = true;
+						}
+					}
 				}
+
 				if (event.payload.type === 'Raise') {
-					pfr = true;
+					raiseCount++;
 				}
 			}
 
-			if (vpip) vpipHands++;
-			if (pfr) pfrHands++;
+			if (isVpip) vpipHands++;
+			if (isPfr) pfrHands++;
+			if (isThreeBetOpportunity) {
+				threeBetOpportunities++;
+				if (isThreeBet) threeBetHands++;
+			}
 		}
+		if (playedSession) playedSessions++;
 	}
 
 	return {
-		sessionsPlayed: 0,
-		handsPlayed: 0,
+		sessionsPlayed: playedSessions,
+		handsPlayed: playedHands,
 		vpip: vpipHands / playedHands,
 		pfr: pfrHands / playedHands,
-		threeBet: 0,
+		threeBet: threeBetHands / threeBetOpportunities,
 		aggFactor: 0,
 		wtsd: 0,
 		wsd: 0

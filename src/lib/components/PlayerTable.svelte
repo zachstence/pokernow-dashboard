@@ -53,6 +53,11 @@
 			accessorKey: 'pfr',
 			header: 'PFR',
 			cell: ({ row }) => `${(100 * row.original.pfr).toFixed(0)}%`
+		},
+		{
+			accessorKey: 'threeBet',
+			header: '3Bet',
+			cell: ({ row }) => `${(100 * row.original.threeBet).toFixed(0)}%`
 		}
 	];
 
