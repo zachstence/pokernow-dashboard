@@ -106,6 +106,8 @@ const computePlayerStats = (
 	let pfrHands = 0;
 	let threeBetOpportunities = 0;
 	let threeBetHands = 0;
+	let postflopRaises = 0;
+	let postflopCalls = 0;
 
 	for (const handsFile of handsFiles) {
 		let playedSession = false;
@@ -118,35 +120,50 @@ const computePlayerStats = (
 			playedSession = true;
 			playedHands++;
 
-			let raiseCount = 1; // Big Blind is the first raise
+			let phase: 'preflop' | 'postflop' = 'preflop';
+			let preflopRaiseCount = 1; // Big Blind is the first raise
+
+			// preflop stats
 			let isVpip = false;
 			let isPfr = false;
 			let isThreeBetOpportunity = false;
 			let isThreeBet = false;
 
 			for (const event of hand.events) {
-				// Only consider preflop events
-				if (event.payload.type === 'DealBoardCard') break;
-
-				const isEventForPlayer = 'seat' in event.payload && event.payload.seat === handPlayer.seat;
-				if (isEventForPlayer) {
-					if (raiseCount === 2) {
-						isThreeBetOpportunity = true;
-					}
-
-					if (event.payload.type === 'Call') {
-						isVpip = true;
-					} else if (event.payload.type === 'Raise') {
-						isVpip = true;
-						isPfr = true;
-						if (isThreeBetOpportunity) {
-							isThreeBet = true;
-						}
-					}
+				if (event.payload.type === 'DealBoardCard' && event.payload.turn === 'Flop') {
+					phase = 'postflop';
 				}
 
-				if (event.payload.type === 'Raise') {
-					raiseCount++;
+				const isEventForPlayer = 'seat' in event.payload && event.payload.seat === handPlayer.seat;
+
+				if (phase === 'preflop') {
+					if (isEventForPlayer) {
+						if (preflopRaiseCount === 2) {
+							isThreeBetOpportunity = true;
+						}
+
+						if (event.payload.type === 'Call') {
+							isVpip = true;
+						} else if (event.payload.type === 'Raise') {
+							isVpip = true;
+							isPfr = true;
+							if (isThreeBetOpportunity) {
+								isThreeBet = true;
+							}
+						}
+					}
+
+					if (event.payload.type === 'Raise') {
+						preflopRaiseCount++;
+					}
+				} else if (phase === 'postflop') {
+					if (isEventForPlayer) {
+						if (event.payload.type === 'Call') {
+							postflopCalls++;
+						} else if (event.payload.type === 'Raise') {
+							postflopRaises++;
+						}
+					}
 				}
 			}
 
@@ -166,7 +183,7 @@ const computePlayerStats = (
 		vpip: vpipHands / playedHands,
 		pfr: pfrHands / playedHands,
 		threeBet: threeBetHands / threeBetOpportunities,
-		aggFactor: 0,
+		aggFactor: postflopRaises / postflopCalls,
 		wtsd: 0,
 		wsd: 0
 	};

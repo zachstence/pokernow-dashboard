@@ -58,6 +58,11 @@
 			accessorKey: 'threeBet',
 			header: '3Bet',
 			cell: ({ row }) => `${(100 * row.original.threeBet).toFixed(0)}%`
+		},
+		{
+			accessorKey: 'aggFactor',
+			header: 'AF',
+			cell: ({ row }) => `${row.original.aggFactor.toFixed(2)}`
 		}
 	];
 
