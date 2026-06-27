@@ -7,11 +7,13 @@
 		Grid,
 		Highlight,
 		Chart as LayerChart,
+		Legend,
 		Spline,
 		Svg,
 		Tooltip,
 		type ChartState,
-		type HighlightPointData
+		type HighlightPointData,
+		type LegendItem
 	} from 'layerchart';
 	import type { PageProps } from './$types';
 	import * as Card from '$lib/components/ui/card';
@@ -19,6 +21,7 @@
 	import ProfitLossTable from '$lib/components/PlayerTable.svelte';
 	import { createRawSnippet } from 'svelte';
 	import * as ShadTooltip from '$lib/components/ui/tooltip';
+	import { scaleOrdinal } from 'd3-scale';
 
 	const { data: pageData }: PageProps = $props();
 
@@ -75,6 +78,28 @@
 		);
 		return [0, ...positiveTicks, ...negativeTicks];
 	});
+
+	let legendSelected: number[] = $state([]);
+	const onLegendClick = (_: unknown, d: LegendItem) => {
+		if (!chartContext) return;
+		const clickedIndex = legendSelected.findIndex((id) => id === d.value);
+		if (clickedIndex === -1) {
+			legendSelected.push(d.value);
+		} else {
+			legendSelected.splice(clickedIndex, 1);
+		}
+	};
+	const onLegendHoverEnter = (_: unknown, d: LegendItem) => {
+		if (!chartContext) return;
+		chartContext.series.highlightKey = d.value.toString();
+	};
+	const onLegendHoverLeave = (_: unknown, d: LegendItem) => {
+		if (!chartContext) return;
+		chartContext.series.highlightKey = null;
+	};
+
+	$inspect('legendSelected', legendSelected);
+	$inspect('highlightKey', chartContext?.series.highlightKey);
 </script>
 
 <div class="grid grid-cols-12 gap-4 p-4">
@@ -132,6 +157,23 @@
 			<Card.Title>Profit and Loss by Hand</Card.Title>
 		</Card.Header>
 		<Card.Content>
+			<Legend
+				selected={legendSelected as unknown as string[]}
+				scale={scaleOrdinal(
+					pageData.players.map((p) => p.id),
+					pageData.players.map((p) => p.color)
+				)}
+				tickFormat={(value) => pageData.players.find((p) => p.id === value)!.displayName}
+				variant="swatches"
+				onclick={onLegendClick}
+				onpointerenter={onLegendHoverEnter}
+				onpointerleave={onLegendHoverLeave}
+				classes={{
+					item: 'p-1 -m-1 hover:opacity-100! hover:bg-muted transition-all rounded-sm',
+					swatch: 'rounded-sm'
+				}}
+			/>
+
 			<Chart.Container config={chartConfig} class="aspect-auto">
 				<LayerChart
 					bind:context={chartContext}
@@ -163,6 +205,9 @@
 								chartContext &&
 								chartContext.series.highlightKey &&
 								chartContext.series.highlightKey !== pIdStr}
+							{@const highlighted = chartContext && chartContext.series.highlightKey === pIdStr}
+							{@const hidden =
+								!highlighted && legendSelected.length && !legendSelected.includes(parseInt(pIdStr))}
 
 							<Spline
 								y={pIdStr}
@@ -179,7 +224,7 @@
 								stroke={player.color}
 								strokeWidth={1.5}
 								stroke-dasharray="4 4"
-								class={dim ? 'opacity-10 saturate-0' : 'opacity-30'}
+								class={hidden ? 'opacity-0' : dim ? 'opacity-10 saturate-0' : 'opacity-30'}
 							/>
 
 							<Spline
@@ -197,7 +242,11 @@
 								}}
 								stroke={player.color}
 								strokeWidth={2.5}
-								class="transition-opacity {dim ? 'opacity-15 saturate-0' : ''}"
+								class="transition-opacity {hidden
+									? 'opacity-0'
+									: dim
+										? 'opacity-15 saturate-0'
+										: ''}"
 							/>
 						{/each}
 
@@ -209,12 +258,18 @@
 										chartContext &&
 										chartContext.series.highlightKey &&
 										chartContext.series.highlightKey !== pIdStr}
+									{@const highlighted = chartContext && chartContext.series.highlightKey === pIdStr}
+									{@const hidden =
+										!highlighted &&
+										legendSelected.length &&
+										!legendSelected.includes(parseInt(pIdStr))}
+
 									<Circle
 										cx={point.x}
 										cy={point.y}
 										r={4}
 										fill={point.fill}
-										class="transition-opacity {dim ? 'opacity-0' : ''}"
+										class="transition-opacity {hidden ? 'opacity-0' : dim ? 'opacity-0' : ''}"
 										onmouseenter={() => {
 											chartContext!.series.highlightKey = pIdStr;
 										}}
