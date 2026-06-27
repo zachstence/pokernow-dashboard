@@ -96,6 +96,7 @@
 			header: ({ column }) =>
 				renderComponent(SortableDataTableHeader, {
 					label: 'VPIP',
+					info: 'Voluntarily Put in Pot: How frequently a player voluntarily puts money into the pot by calling or raising preflop. Does not include posting blinds.',
 					onclick: column.getToggleSortingHandler(),
 					direction: findSortDirection(sorting, 'vpip')
 				}),
@@ -106,6 +107,7 @@
 			header: ({ column }) =>
 				renderComponent(SortableDataTableHeader, {
 					label: 'PFR',
+					info: 'Preflop Raise: How frequently a player raises preflop. Includes all preflop raises - open raises, 3-bets, 4-bets, etc.',
 					onclick: column.getToggleSortingHandler(),
 					direction: findSortDirection(sorting, 'pfr')
 				}),
@@ -115,7 +117,8 @@
 			accessorKey: 'threeBet',
 			header: ({ column }) =>
 				renderComponent(SortableDataTableHeader, {
-					label: '3Bet',
+					label: '3-bet',
+					info: "3-bet: How frequently a player re-raises another player's preflop open raise (e.g. Alice posts the $2 big blind, Bob open raises to $5, and Charlie 3-bets to $15).",
 					onclick: column.getToggleSortingHandler(),
 					direction: findSortDirection(sorting, 'threeBet')
 				}),
@@ -126,6 +129,7 @@
 			header: ({ column }) =>
 				renderComponent(SortableDataTableHeader, {
 					label: 'AF',
+					info: 'Aggression Factor: How many times a player bet or raised postflop divided by how many times they called postflop.',
 					onclick: column.getToggleSortingHandler(),
 					direction: findSortDirection(sorting, 'aggFactor')
 				}),
@@ -136,6 +140,7 @@
 			header: ({ column }) =>
 				renderComponent(SortableDataTableHeader, {
 					label: 'WTSD',
+					info: 'Went to Showdown: How frequently a player made it to showdown after seeing the flop (e.g. A player who sees 20 flops and makes it to showdown 10 times has 50% WTSD).',
 					onclick: column.getToggleSortingHandler(),
 					direction: findSortDirection(sorting, 'wtsd')
 				}),
@@ -146,6 +151,7 @@
 			header: ({ column }) =>
 				renderComponent(SortableDataTableHeader, {
 					label: 'WSD',
+					info: 'Won Showdown: How frequently a player wins a showdown that they reach (e.g. A player who makes it to showdown 10 times and wins 4 times has 40% WSD).',
 					onclick: column.getToggleSortingHandler(),
 					direction: findSortDirection(sorting, 'wsd')
 				}),

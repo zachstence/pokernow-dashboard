@@ -18,6 +18,7 @@
 	import Value from '$lib/components/Value.svelte';
 	import ProfitLossTable from '$lib/components/PlayerTable.svelte';
 	import { createRawSnippet } from 'svelte';
+	import * as ShadTooltip from '$lib/components/ui/tooltip';
 
 	const { data: pageData }: PageProps = $props();
 
