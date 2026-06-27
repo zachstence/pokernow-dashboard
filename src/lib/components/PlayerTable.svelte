@@ -4,13 +4,15 @@
 		getCoreRowModel,
 		getFilteredRowModel,
 		getPaginationRowModel,
-		getSortedRowModel
+		getSortedRowModel,
+		type SortingState
 	} from '@tanstack/table-core';
 	import { createSvelteTable, FlexRender, renderComponent } from '$lib/components/ui/data-table';
 	import * as Table from '$lib/components/ui/table';
 	import type { PlayersFile } from '$lib/server/transform-data/loadPlayersFile';
 	import PlayerNameAndColor from './ui/PlayerNameAndColor.svelte';
 	import type { PlayerStats } from '$lib/server/transform-data';
+	import SortableDataTableHeader from './SortableDataTableHeader.svelte';
 
 	type Props = {
 		players: PlayersFile;
@@ -42,6 +44,15 @@
 		})
 	);
 
+	let sorting: SortingState = $state([]);
+
+	const findSortDirection = (sorting: SortingState, id: string): 'asc' | 'desc' | undefined => {
+		const found = sorting.find((s) => s.id === id);
+		if (!found) return undefined;
+		if (found.desc) return 'desc';
+		return 'asc';
+	};
+
 	const columns: ColumnDef<Row>[] = [
 		{
 			accessorKey: 'player',
@@ -50,15 +61,30 @@
 		},
 		{
 			accessorKey: 'sessionsPlayed',
-			header: 'Sessions'
+			header: ({ column }) =>
+				renderComponent(SortableDataTableHeader, {
+					label: 'Sessions',
+					onclick: column.getToggleSortingHandler(),
+					direction: findSortDirection(sorting, 'sessionsPlayed')
+				})
 		},
 		{
 			accessorKey: 'handsPlayed',
-			header: 'Hands'
+			header: ({ column }) =>
+				renderComponent(SortableDataTableHeader, {
+					label: 'Hands',
+					onclick: column.getToggleSortingHandler(),
+					direction: findSortDirection(sorting, 'handsPlayed')
+				})
 		},
 		{
 			accessorKey: 'profit',
-			header: 'Profit/Loss',
+			header: ({ column }) =>
+				renderComponent(SortableDataTableHeader, {
+					label: 'Profit/Loss',
+					onclick: column.getToggleSortingHandler(),
+					direction: findSortDirection(sorting, 'profit')
+				}),
 			cell: ({
 				row: {
 					original: { profit }
@@ -67,32 +93,62 @@
 		},
 		{
 			accessorKey: 'vpip',
-			header: 'VPIP',
+			header: ({ column }) =>
+				renderComponent(SortableDataTableHeader, {
+					label: 'VPIP',
+					onclick: column.getToggleSortingHandler(),
+					direction: findSortDirection(sorting, 'vpip')
+				}),
 			cell: ({ row }) => `${(100 * row.original.vpip).toFixed(0)}%`
 		},
 		{
 			accessorKey: 'pfr',
-			header: 'PFR',
+			header: ({ column }) =>
+				renderComponent(SortableDataTableHeader, {
+					label: 'PFR',
+					onclick: column.getToggleSortingHandler(),
+					direction: findSortDirection(sorting, 'pfr')
+				}),
 			cell: ({ row }) => `${(100 * row.original.pfr).toFixed(0)}%`
 		},
 		{
 			accessorKey: 'threeBet',
-			header: '3Bet',
+			header: ({ column }) =>
+				renderComponent(SortableDataTableHeader, {
+					label: '3Bet',
+					onclick: column.getToggleSortingHandler(),
+					direction: findSortDirection(sorting, 'threeBet')
+				}),
 			cell: ({ row }) => `${(100 * row.original.threeBet).toFixed(0)}%`
 		},
 		{
 			accessorKey: 'aggFactor',
-			header: 'AF',
+			header: ({ column }) =>
+				renderComponent(SortableDataTableHeader, {
+					label: 'AF',
+					onclick: column.getToggleSortingHandler(),
+					direction: findSortDirection(sorting, 'aggFactor')
+				}),
 			cell: ({ row }) => `${row.original.aggFactor.toFixed(2)}`
 		},
 		{
 			accessorKey: 'wtsd',
-			header: 'WTSD',
+			header: ({ column }) =>
+				renderComponent(SortableDataTableHeader, {
+					label: 'WTSD',
+					onclick: column.getToggleSortingHandler(),
+					direction: findSortDirection(sorting, 'wtsd')
+				}),
 			cell: ({ row }) => `${(100 * row.original.wtsd).toFixed(0)}%`
 		},
 		{
 			accessorKey: 'wsd',
-			header: 'WSD',
+			header: ({ column }) =>
+				renderComponent(SortableDataTableHeader, {
+					label: 'WSD',
+					onclick: column.getToggleSortingHandler(),
+					direction: findSortDirection(sorting, 'wsd')
+				}),
 			cell: ({ row }) => `${(100 * row.original.wsd).toFixed(0)}%`
 		}
 	];
@@ -105,7 +161,19 @@
 		getCoreRowModel: getCoreRowModel(),
 		getPaginationRowModel: getPaginationRowModel(),
 		getSortedRowModel: getSortedRowModel(),
-		getFilteredRowModel: getFilteredRowModel()
+		getFilteredRowModel: getFilteredRowModel(),
+		onSortingChange: (updater) => {
+			if (typeof updater === 'function') {
+				sorting = updater(sorting);
+			} else {
+				sorting = updater;
+			}
+		},
+		state: {
+			get sorting() {
+				return sorting;
+			}
+		}
 	});
 </script>
 

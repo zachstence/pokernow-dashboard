@@ -76,13 +76,13 @@
 	});
 </script>
 
-<div class="grid grid-cols-12 gap-2 p-2">
+<div class="grid grid-cols-12 gap-4 p-4">
 	<Card.Root class="col-span-3">
 		<Card.Header>
 			<Card.Title>Total Sessions Played</Card.Title>
 		</Card.Header>
 		<Card.Content>
-			<Value class="text-center" value={123456789} />
+			<Value class="text-center" value={pageData.overview.totalSessionsPlayed} />
 		</Card.Content>
 	</Card.Root>
 
@@ -113,11 +113,25 @@
 		</Card.Content>
 	</Card.Root>
 
-	<ProfitLossTable players={pageData.players} playerStats={pageData.playerStats} {profitByPlayer} />
+	<Card.Root class="col-span-12">
+		<Card.Header>
+			<Card.Title>Player Stats</Card.Title>
+		</Card.Header>
+		<Card.Content>
+			<ProfitLossTable
+				players={pageData.players}
+				playerStats={pageData.playerStats}
+				{profitByPlayer}
+			/>
+		</Card.Content>
+	</Card.Root>
 
 	<Card.Root class="col-span-12 w-full">
+		<Card.Header>
+			<Card.Title>Profit and Loss by Hand</Card.Title>
+		</Card.Header>
 		<Card.Content>
-			<Chart.Container config={chartConfig}>
+			<Chart.Container config={chartConfig} class="aspect-auto">
 				<LayerChart
 					bind:context={chartContext}
 					data={chartData}
@@ -127,6 +141,7 @@
 					tooltipContext={{ mode: 'quadtree-x' }}
 					padding={20}
 					yNice
+					height={400}
 				>
 					<Svg>
 						<Axis
