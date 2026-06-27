@@ -44,7 +44,7 @@
 		})
 	);
 
-	let sorting: SortingState = $state([]);
+	let sorting: SortingState = $state([{ id: 'profit', desc: true }]);
 
 	const findSortDirection = (sorting: SortingState, id: string): 'asc' | 'desc' | undefined => {
 		const found = sorting.find((s) => s.id === id);
