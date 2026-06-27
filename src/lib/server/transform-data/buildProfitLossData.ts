@@ -58,8 +58,9 @@ export const buildProfitLossData = (
 					playerData[playerData.length - 1]!.value += postedMissingSmallBlindDiff;
 				}
 
+				const prev = playerData[playerData.length - 1]?.value ?? 0;
 				const diff = convertStack(handDiff, hand.cents);
-				const value = round(lastValue + diff, 2);
+				const value = round(prev + diff, 2);
 
 				playerData.push({
 					handNumber: h + 1,
