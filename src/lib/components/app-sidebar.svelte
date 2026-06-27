@@ -7,6 +7,9 @@
 	import type { PlayersFile } from '$lib/server/transform-data/loadPlayersFile';
 	import favicon from '$lib/assets/favicon.svg?raw';
 	import { page } from '$app/state';
+	import Button from './ui/button/button.svelte';
+	import ModeToggle from './ModeSwitcher.svelte';
+	import GithubIcon from '@iconify-svelte/line-md/github';
 
 	type Props = {
 		sessions: {
@@ -49,7 +52,7 @@
 					{#snippet child({ props })}
 						<a href={resolve('/')} {...props}>
 							<div
-								class="flex aspect-square size-8 items-center justify-center text-black *:size-full!"
+								class="flex aspect-square size-8 items-center justify-center text-foreground *:size-full!"
 							>
 								<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 								{@html favicon}
@@ -63,7 +66,7 @@
 			</Sidebar.MenuItem>
 		</Sidebar.Menu>
 	</Sidebar.Header>
-	<Sidebar.Content>
+	<Sidebar.Content class="flex flex-col justify-between">
 		<Sidebar.Group>
 			<Sidebar.Menu>
 				{#each data.navMain as item (item.title)}
@@ -110,5 +113,18 @@
 			</Sidebar.Menu>
 		</Sidebar.Group>
 	</Sidebar.Content>
+	<Sidebar.Footer>
+		<div class="flex items-center justify-center">
+			<ModeToggle />
+			<Button
+				variant="ghost"
+				size="icon"
+				href="https://github.com/zachstence/pokernow-dashboard"
+				target="_blank"
+			>
+				<GithubIcon class="*:animate-none!" />
+			</Button>
+		</div>
+	</Sidebar.Footer>
 	<Sidebar.Rail />
 </Sidebar.Root>

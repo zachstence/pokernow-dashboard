@@ -6,6 +6,7 @@
 	import AppSidebar from '$lib/components/app-sidebar.svelte';
 	import type { LayoutProps } from './$types';
 	import * as Tooltip from '$lib/components/ui/tooltip';
+	import { ModeWatcher } from 'mode-watcher';
 
 	let { children, data }: LayoutProps = $props();
 </script>
@@ -15,6 +16,8 @@
 	<link rel="icon" type="image/svg+xml" href={faviconWhite} media="(prefers-color-scheme: dark)" />
 	<title>ZenAI Poker Dashboard</title>
 </svelte:head>
+
+<ModeWatcher />
 
 <Tooltip.Provider>
 	<Sidebar.Provider>
