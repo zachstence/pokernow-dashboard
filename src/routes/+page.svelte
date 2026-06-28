@@ -2,6 +2,7 @@
 	import * as Chart from '$lib/components/ui/chart/index.js';
 	import {
 		Axis,
+		ChartClipPath,
 		Circle,
 		Frame,
 		Grid,
@@ -22,6 +23,7 @@
 	import { createRawSnippet } from 'svelte';
 	import * as ShadTooltip from '$lib/components/ui/tooltip';
 	import { scaleOrdinal } from 'd3-scale';
+	import { cubicInOut } from 'svelte/easing';
 
 	const { data: pageData }: PageProps = $props();
 
@@ -199,56 +201,63 @@
 						<Grid y {yTicks} />
 						<Frame class="fill-none stroke-border/50 stroke-1" />
 
-						{#each pageData.players as player (player.id)}
-							{@const pIdStr = player.id.toString()}
-							{@const dim =
-								chartContext &&
-								chartContext.series.highlightKey &&
-								chartContext.series.highlightKey !== pIdStr}
-							{@const highlighted = chartContext && chartContext.series.highlightKey === pIdStr}
-							{@const hidden =
-								!highlighted && legendSelected.length && !legendSelected.includes(parseInt(pIdStr))}
+						<ChartClipPath
+							initialWidth={0}
+							motion={{ width: { type: 'tween', duration: 1000, easing: cubicInOut } }}
+						>
+							{#each pageData.players as player (player.id)}
+								{@const pIdStr = player.id.toString()}
+								{@const dim =
+									chartContext &&
+									chartContext.series.highlightKey &&
+									chartContext.series.highlightKey !== pIdStr}
+								{@const highlighted = chartContext && chartContext.series.highlightKey === pIdStr}
+								{@const hidden =
+									!highlighted &&
+									legendSelected.length &&
+									!legendSelected.includes(parseInt(pIdStr))}
 
-							<Spline
-								y={pIdStr}
-								defined={(
-									d: { [x: string]: boolean },
-									i: number,
-									arr: { [x: string]: { [x: string]: boolean } }
-								) => {
-									if (d[pIdStr] === undefined) return false;
-									const didntPlayNow = d[`${pIdStr}_played`] === false;
-									const didntPlayNext = arr[i + 1]?.[`${pIdStr}_played`] === false;
-									return didntPlayNow || didntPlayNext;
-								}}
-								stroke={player.color}
-								strokeWidth={1.5}
-								stroke-dasharray="4 4"
-								class={hidden ? 'opacity-0' : dim ? 'opacity-10 saturate-0' : 'opacity-30'}
-							/>
+								<Spline
+									y={pIdStr}
+									defined={(
+										d: { [x: string]: boolean },
+										i: number,
+										arr: { [x: string]: { [x: string]: boolean } }
+									) => {
+										if (d[pIdStr] === undefined) return false;
+										const didntPlayNow = d[`${pIdStr}_played`] === false;
+										const didntPlayNext = arr[i + 1]?.[`${pIdStr}_played`] === false;
+										return didntPlayNow || didntPlayNext;
+									}}
+									stroke={player.color}
+									strokeWidth={1.5}
+									stroke-dasharray="4 4"
+									class={hidden ? 'opacity-0' : dim ? 'opacity-10 saturate-0' : 'opacity-30'}
+								/>
 
-							<Spline
-								y={pIdStr}
-								defined={(
-									d: { [x: string]: boolean },
-									i: number,
-									arr: { [x: string]: { [x: string]: boolean } }
-								) => {
-									if (d[pIdStr] === undefined) return false;
-									const playedNow = d[`${pIdStr}_played`] === true;
-									// Use the internal array pointer 'arr' safely instead of tracking chartData
-									const playedNext = arr[i + 1]?.[`${pIdStr}_played`] === true;
-									return playedNow || playedNext;
-								}}
-								stroke={player.color}
-								strokeWidth={2.5}
-								class="transition-opacity {hidden
-									? 'opacity-0'
-									: dim
-										? 'opacity-15 saturate-0'
-										: ''}"
-							/>
-						{/each}
+								<Spline
+									y={pIdStr}
+									defined={(
+										d: { [x: string]: boolean },
+										i: number,
+										arr: { [x: string]: { [x: string]: boolean } }
+									) => {
+										if (d[pIdStr] === undefined) return false;
+										const playedNow = d[`${pIdStr}_played`] === true;
+										// Use the internal array pointer 'arr' safely instead of tracking chartData
+										const playedNext = arr[i + 1]?.[`${pIdStr}_played`] === true;
+										return playedNow || playedNext;
+									}}
+									stroke={player.color}
+									strokeWidth={2.5}
+									class="transition-opacity {hidden
+										? 'opacity-0'
+										: dim
+											? 'opacity-15 saturate-0'
+											: ''}"
+								/>
+							{/each}
+						</ChartClipPath>
 
 						<Highlight lines>
 							{#snippet points({ points })}
