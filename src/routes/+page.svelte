@@ -24,6 +24,7 @@
 	import * as ShadTooltip from '$lib/components/ui/tooltip';
 	import { scaleOrdinal } from 'd3-scale';
 	import { cubicInOut } from 'svelte/easing';
+	import { fade } from 'svelte/transition';
 
 	const { data: pageData }: PageProps = $props();
 
@@ -99,9 +100,6 @@
 		if (!chartContext) return;
 		chartContext.series.highlightKey = null;
 	};
-
-	$inspect('legendSelected', legendSelected);
-	$inspect('highlightKey', chartContext?.series.highlightKey);
 </script>
 
 <div class="grid grid-cols-12 gap-4 p-4">
@@ -159,24 +157,30 @@
 			<Card.Title>Profit and Loss by Hand</Card.Title>
 		</Card.Header>
 		<Card.Content>
-			<Legend
-				selected={legendSelected as unknown as string[]}
-				scale={scaleOrdinal(
-					pageData.players.map((p) => p.id),
-					pageData.players.map((p) => p.color)
-				)}
-				tickFormat={(value) => pageData.players.find((p) => p.id === value)!.displayName}
-				variant="swatches"
-				onclick={onLegendClick}
-				onpointerenter={onLegendHoverEnter}
-				onpointerleave={onLegendHoverLeave}
-				classes={{
-					item: 'p-1 -m-1 hover:opacity-100! hover:bg-muted transition-all rounded-sm',
-					swatch: 'rounded-sm'
-				}}
-			/>
+			<div class="no-scrollbar w-full overflow-auto">
+				<Legend
+					selected={legendSelected as unknown as string[]}
+					scale={scaleOrdinal(
+						pageData.players.map((p) => p.id),
+						pageData.players.map((p) => p.color)
+					)}
+					tickFormat={(value) => pageData.players.find((p) => p.id === value)!.displayName}
+					variant="swatches"
+					onclick={onLegendClick}
+					onpointerenter={onLegendHoverEnter}
+					onpointerleave={onLegendHoverLeave}
+					classes={{
+						root: 'h-[16px]',
+						item: 'p-1 -m-1 hover:opacity-100! hover:bg-muted transition-all rounded-sm',
+						swatch: 'rounded-sm'
+					}}
+				/>
+			</div>
 
-			<Chart.Container config={chartConfig} class="aspect-auto">
+			<Chart.Container config={chartConfig} class="relative aspect-auto">
+				{#if !chartContext?.isMounted}
+					<div class="h-[400px] w-full animate-pulse rounded-md bg-muted"></div>
+				{/if}
 				<LayerChart
 					bind:context={chartContext}
 					data={chartData}
@@ -184,7 +188,7 @@
 					x="handNumber"
 					xDomain={[0, pageData.overview.totalHandsPlayed]}
 					tooltipContext={{ mode: 'quadtree-x' }}
-					padding={20}
+					padding={{ left: 35, top: 20, bottom: 20 }}
 					yNice
 					height={400}
 				>
