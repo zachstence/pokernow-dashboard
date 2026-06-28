@@ -13,6 +13,7 @@
 		Svg,
 		Tooltip,
 		type ChartState,
+		type DomainType,
 		type HighlightPointData,
 		type LegendItem
 	} from 'layerchart';
@@ -100,6 +101,8 @@
 		if (!chartContext) return;
 		chartContext.series.highlightKey = null;
 	};
+
+	let xDomain = $state<DomainType>([null, null]);
 </script>
 
 <div class="grid grid-cols-12 gap-4 p-4">
@@ -186,11 +189,17 @@
 					data={chartData}
 					series={pageData.players.map((p) => ({ key: p.id.toString(), color: p.color }))}
 					x="handNumber"
-					xDomain={[0, pageData.overview.totalHandsPlayed]}
+					{xDomain}
 					tooltipContext={{ mode: 'quadtree-x' }}
 					padding={{ left: 35, top: 20, bottom: 20 }}
 					yNice
 					height={400}
+					brush={{
+						onBrushEnd: (e) => {
+							xDomain = e.brush.x;
+							e.brush.reset();
+						}
+					}}
 				>
 					<Svg>
 						<Axis
