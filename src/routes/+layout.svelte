@@ -2,14 +2,11 @@
 	import './layout.css';
 	import faviconBlack from '$lib/assets/favicon-black.svg';
 	import faviconWhite from '$lib/assets/favicon-white.svg';
-	import * as Sidebar from '$lib/components/ui/sidebar';
-	import AppSidebar from '$lib/components/app-sidebar.svelte';
 	import type { LayoutProps } from './$types';
-	import * as Tooltip from '$lib/components/ui/tooltip';
 	import { ModeWatcher } from 'mode-watcher';
 	import inter from '@fontsource-variable/inter?url';
 
-	let { children, data }: LayoutProps = $props();
+	let { children }: LayoutProps = $props();
 </script>
 
 <svelte:head>
@@ -21,11 +18,4 @@
 
 <ModeWatcher />
 
-<Tooltip.Provider>
-	<Sidebar.Provider>
-		<AppSidebar players={data.players} sessions={data.sessions} />
-		<Sidebar.Inset>
-			{@render children()}
-		</Sidebar.Inset>
-	</Sidebar.Provider>
-</Tooltip.Provider>
+{@render children?.()}

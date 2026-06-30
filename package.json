@@ -5,7 +5,7 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
-		"build": "vite build",
+		"build": "vite build && pnpm generate-og-images",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
@@ -16,7 +16,9 @@
 		"test": "npm run test:unit -- --run && npm run test:e2e",
 		"test:e2e": "playwright install && playwright test",
 		"transform-data": "tsx src/lib/server/transform-data/index.ts",
-		"transform-data:watch": "tsx watch src/lib/server/transform-data/index.ts"
+		"transform-data:watch": "tsx watch src/lib/server/transform-data/index.ts",
+		"generate-og-images": "tsx src/lib/server/generate-og-images/index.ts",
+		"generate-og-images:watch": "tsx watch src/lib/server/generate-og-images/index.ts"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^2.1.0",
@@ -63,3 +65,4 @@
 		"zod": "^4.4.3"
 	}
 }
+
