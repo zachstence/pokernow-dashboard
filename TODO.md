@@ -1,8 +1,10 @@
 # TODO
 
 - Fix number/string player ID weirdness with chart data / legend
+- Generate all stats once to JSON files, then read in load functions/og endpoints (instead of recomputing every time)
 
 ## Stats ideas
+
 - Overview page
   - Cards
     - Total Sessions Played
@@ -40,4 +42,5 @@
     - WTSD % (Went to Showdown): Of the hands where they saw a flop, how often did they stay until the river cards were shown?
     - WSD % (Won at Showdown): When they actually showed their cards, how often did they win?
     - C-Bet % (Continuation Bet): How often the pre-flop raiser bets the flop.
-  - P&L graph 
+  - P&L graph
+
