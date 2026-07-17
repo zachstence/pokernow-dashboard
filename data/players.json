@@ -3,48 +3,43 @@
 		"id": 1,
 		"displayName": "Zach",
 		"color": "#3b82f6",
-		"pokerNowPlayerIds": [
-			"gKkbM5nCAy"
-		]
+		"pokerNowPlayerIds": ["gKkbM5nCAy"]
 	},
 	{
 		"id": 2,
 		"displayName": "Benri",
 		"color": "#ef4444",
-		"pokerNowPlayerIds": [
-			"O9epsVqUWa"
-		]
+		"pokerNowPlayerIds": ["O9epsVqUWa"]
 	},
 	{
 		"id": 3,
 		"displayName": "Adrian",
 		"color": "#22c55e",
-		"pokerNowPlayerIds": [
-			"xJrZqilXR1"
-		]
+		"pokerNowPlayerIds": ["xJrZqilXR1", "MLkitFwT60"]
 	},
 	{
 		"id": 4,
 		"displayName": "John",
 		"color": "#f59e0b",
-		"pokerNowPlayerIds": [
-			"dzLv4GssMl"
-		]
+		"pokerNowPlayerIds": ["dzLv4GssMl"]
 	},
 	{
 		"id": 5,
 		"displayName": "Denis",
 		"color": "#a855f7",
-		"pokerNowPlayerIds": [
-			"fMtVr2WlPF"
-		]
+		"pokerNowPlayerIds": ["fMtVr2WlPF"]
 	},
 	{
 		"id": 6,
 		"displayName": "Leo",
 		"color": "#e8389f",
-		"pokerNowPlayerIds": [
-			"kJtMwQ1x2Q"
-		]
+		"pokerNowPlayerIds": ["kJtMwQ1x2Q"]
+	},
+	{
+		"id": 7,
+		"displayName": "David",
+		"color": "#F8E339",
+		"pokerNowPlayerIds": ["Kv8MwICUbu"]
 	}
 ]
+
