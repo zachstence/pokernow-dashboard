@@ -39,7 +39,7 @@ export const computeStats = async (): Promise<Stats> => {
 	const players = await loadPlayersFile();
 	const handsFiles = await loadHandsFiles();
 	const sessions = handsFiles
-		.sort((a, b) => b.hands[0]!.startedAt.getTime() - a.hands[0]!.startedAt.getTime())
+		.sort((a, b) => a.hands[0]!.startedAt.getTime() - b.hands[0]!.startedAt.getTime())
 		.map((handsFile, i) => ({
 			title: handsFile.hands[0]!.startedAt.toLocaleDateString(),
 			url: `/sessions/${i + 1}`

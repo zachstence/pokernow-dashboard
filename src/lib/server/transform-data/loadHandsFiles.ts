@@ -8,5 +8,13 @@ export const loadHandsFiles = async (): Promise<HandsFile[]> => {
 	const handsFilePaths = dataFileNames
 		.filter((filename) => handsFileRegex.test(filename))
 		.map((filename) => `./data/${filename}`);
-	return Promise.all(handsFilePaths.map((path) => loadHandsFile(path)));
+	const handsFiles = await Promise.all(handsFilePaths.map((path) => loadHandsFile(path)));
+	// readdir order is alphabetical by game ID, not chronological
+	const sorted = handsFiles.sort(
+		(a, b) => getFileStartTime(a).getTime() - getFileStartTime(b).getTime()
+	);
+	console.log(sorted);
+	return sorted;
 };
+
+const getFileStartTime = (file: HandsFile): Date => file.hands[0]?.startedAt ?? file.generatedAt;
