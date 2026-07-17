@@ -13,7 +13,6 @@ export const loadHandsFiles = async (): Promise<HandsFile[]> => {
 	const sorted = handsFiles.sort(
 		(a, b) => getFileStartTime(a).getTime() - getFileStartTime(b).getTime()
 	);
-	console.log(sorted);
 	return sorted;
 };
 
