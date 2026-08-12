@@ -71,6 +71,23 @@ const CollectEventPayloadSchema = z.object({
 });
 export type CollectEventPayload = z.infer<typeof CollectEventPayloadSchema>;
 
+const SettleBountyEventPayloadSchema = z.object({
+	type: z.literal(18).transform(() => 'SettleBounty' as const),
+	receivedBounties: z.array(
+		z.tuple([
+			z.number(), // seat
+			z.number() // amount
+		])
+	),
+	paidBounties: z.array(
+		z.tuple([
+			z.number(), // seat
+			z.number() // amount
+		])
+	)
+});
+export type SettleBountyEventPayload = z.infer<typeof SettleBountyEventPayloadSchema>;
+
 const PayloadSchema = z.discriminatedUnion('type', [
 	z.object({
 		type: z.literal(0).transform(() => 'Check' as const),
@@ -153,7 +170,8 @@ const PayloadSchema = z.discriminatedUnion('type', [
 		type: z.literal(16).transform(() => 'Uncall' as const),
 		value: z.int(),
 		seat: z.int()
-	})
+	}),
+	SettleBountyEventPayloadSchema
 ]);
 
 const EventSchema = z.object({

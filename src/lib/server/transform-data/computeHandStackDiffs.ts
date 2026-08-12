@@ -45,6 +45,19 @@ export const computeHandStackDiffs = (
 				handDiff += runningDiff;
 				runningDiff = 0;
 			}
+
+			if (payload.type === 'SettleBounty') {
+				for (const [receivedSeat, receivedAmount] of payload.receivedBounties) {
+					if (receivedSeat === player.seat) {
+						handDiff += receivedAmount;
+					}
+				}
+				for (const [receivedSeat, receivedAmount] of payload.paidBounties) {
+					if (receivedSeat === player.seat) {
+						handDiff -= receivedAmount;
+					}
+				}
+			}
 		}
 
 		diffs[pokerNowPlayerId] = {
