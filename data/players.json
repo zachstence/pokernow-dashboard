@@ -9,13 +9,13 @@
 		"id": 2,
 		"displayName": "Benri",
 		"color": "#ef4444",
-		"pokerNowPlayerIds": ["O9epsVqUWa"]
+		"pokerNowPlayerIds": ["O9epsVqUWa", "0ru6KtUj_V"]
 	},
 	{
 		"id": 3,
 		"displayName": "Adrian",
 		"color": "#22c55e",
-		"pokerNowPlayerIds": ["xJrZqilXR1", "MLkitFwT60"]
+		"pokerNowPlayerIds": ["xJrZqilXR1", "MLkitFwT60", "iAu0FHpBA1"]
 	},
 	{
 		"id": 4,
@@ -42,4 +42,3 @@
 		"pokerNowPlayerIds": ["Kv8MwICUbu"]
 	}
 ]
-
