@@ -3,6 +3,7 @@
 - Fix number/string player ID weirdness with chart data / legend
 
 ## Stats ideas
+
 - Overview page
   - Cards
     - Total Sessions Played
@@ -40,4 +41,10 @@
     - WTSD % (Went to Showdown): Of the hands where they saw a flop, how often did they stay until the river cards were shown?
     - WSD % (Won at Showdown): When they actually showed their cards, how often did they win?
     - C-Bet % (Continuation Bet): How often the pre-flop raiser bets the flop.
-  - P&L graph 
+  - P&L graph
+
+- Player type graph - Loose/Tight vs Passive/Aggressive
+  - Since we often play short handed and crazy, have the ability to swap between "absolute" ranges and relative ranges"
+    - Absolute uses commonly accepted threshold to divide loose/tight and passive/aggressive
+    - Relative uses the middle value of our groups to divide everybody in half for both loose/tight and passive/aggressive
+
