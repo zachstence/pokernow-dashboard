@@ -10,6 +10,7 @@
     - Total Hands Played
     - Total Players
     - Biggest Pot (and winner of it)
+    - Craziest session - the one with the most money swinging around the table
   - Player Standings table
     - Name (with color chip matching graph below)
     - Number of sessions played
