@@ -67,7 +67,9 @@ const CollectEventPayloadSchema = z.object({
 	seat: z.int(),
 	value: z.int(),
 	pot: z.int(),
-	position: z.int()
+	position: z.int(),
+	handDescription: z.string().optional(),
+	runNumber: z.enum(['1', '2']).optional()
 });
 export type CollectEventPayload = z.infer<typeof CollectEventPayloadSchema>;
 
@@ -124,12 +126,14 @@ const PayloadSchema = z.discriminatedUnion('type', [
 	z.object({
 		type: z.literal(7).transform(() => 'Call' as const),
 		seat: z.int(),
-		value: z.int()
+		value: z.int(),
+		allIn: z.boolean().optional()
 	}),
 	z.object({
 		type: z.literal(8).transform(() => 'Raise' as const),
 		seat: z.int(),
-		value: z.int()
+		value: z.int(),
+		allIn: z.boolean().optional()
 	}),
 	z.object({
 		type: z.literal(9).transform(() => 'DealBoardCard' as const),
@@ -165,7 +169,7 @@ const PayloadSchema = z.discriminatedUnion('type', [
 	z.object({
 		type: z.literal(15).transform(() => 'HandFinished' as const)
 	}),
-	// Collecting blind bet after you take down uncontested pot
+	// Collecting a bet after all other players fold
 	z.object({
 		type: z.literal(16).transform(() => 'Uncall' as const),
 		value: z.int(),
