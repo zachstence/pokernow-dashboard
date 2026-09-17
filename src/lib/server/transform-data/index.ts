@@ -1,7 +1,7 @@
 import { buildProfitLossData, type ProfitLossData } from './buildProfitLossData';
 import { computeHandActionMatrix } from './computeHandActionMatrix';
 import { convertStack } from './convertStack';
-import type { CollectEventPayload, HandEvent, HandsFile } from './loadHandsFile';
+import type { CollectEventPayload, HandsFile } from './loadHandsFile';
 import { loadHandsFiles } from './loadHandsFiles';
 import { loadPlayersFile, type PlayersFile } from './loadPlayersFile';
 import { pokerNowPlayerIdToPlayerId } from './pokerNowPlayerIdToPlayerId';
@@ -78,32 +78,6 @@ export const computeStats = async (): Promise<Stats> => {
 		playerStats[player.id] = stats;
 		return playerStats;
 	}, {});
-
-	for (const handsFile of handsFiles) {
-		for (const hand of handsFile.hands) {
-			const collects = hand.events
-				.filter((e) => e.payload.type === 'Collect')
-				.map((e) => e.payload as CollectEventPayload);
-			if (collects.length === 0) continue;
-			const hasMultipleCollects = collects.length > 1;
-			const firstHandDescription = collects[0]!.handDescription;
-			const isChop = collects.every(
-				(p) => p.handDescription === firstHandDescription || p.runNumber !== '1'
-			);
-			if (hasMultipleCollects && !isChop) {
-				console.log(`\nMulti Collect!\n${handsFile.gameId}\n${hand.number}\n`);
-			}
-		}
-	}
-
-	// const testHandsFile = handsFiles[2]!;
-	// const testHand = testHandsFile.hands[87]!;
-	const testHandsFile = handsFiles[3]!;
-	const testHand = testHandsFile.hands[39]!;
-	console.log('Game ID', testHandsFile?.gameId);
-	console.log('Hand Number', testHand.number);
-	const actionMatrix = computeHandActionMatrix(testHand);
-	console.log({ actionMatrix });
 
 	return {
 		players,
