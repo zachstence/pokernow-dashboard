@@ -1,4 +1,8 @@
+import { convertStack } from './convertStack';
 import type { CollectEventPayload, Hand } from './loadHandsFile';
+import type { PlayersFile } from './loadPlayersFile';
+import { pokerNowPlayerIdToPlayerId } from './pokerNowPlayerIdToPlayerId';
+import { round } from './round';
 
 export type ActionMatrix = {
 	[loserPlayerId: string]: {
@@ -6,20 +10,13 @@ export type ActionMatrix = {
 	};
 };
 
-export const computeHandActionMatrix = (hand: Hand): ActionMatrix => {
+export const computeHandActionMatrix = (players: PlayersFile, hand: Hand): ActionMatrix => {
 	const totalCommittedByPlayerId: Record<string, number> = {};
 	let streetCommittedByPlayerId: Record<string, number> = {};
-	const foldedPlayerIds: string[] = [];
+	const foldedPlayerIds: number[] = [];
 
 	for (const event of hand.events) {
 		const p = event.payload;
-
-		const player = hand.players.find((player) => player.seat === p.seat);
-		if (player) {
-			console.log(player?.id, player?.name, p.type, p.value, p.allIn ? 'ALL IN' : '');
-		} else {
-			console.log(p.type, p.turn);
-		}
 
 		if (
 			p.type === 'PostBigBlind' ||
@@ -30,39 +27,34 @@ export const computeHandActionMatrix = (hand: Hand): ActionMatrix => {
 			p.type === 'Raise'
 		) {
 			const player = hand.players.find((player) => player.seat === p.seat)!;
-			streetCommittedByPlayerId[player.id] = p.value;
+			const playerId = pokerNowPlayerIdToPlayerId(players, player.id);
+			streetCommittedByPlayerId[playerId] = p.value;
 		} else if (p.type === 'Uncall') {
 			const player = hand.players.find((player) => player.seat === p.seat)!;
-			streetCommittedByPlayerId[player.id]! -= p.value;
+			const playerId = pokerNowPlayerIdToPlayerId(players, player.id);
+			streetCommittedByPlayerId[playerId]! -= p.value;
 		} else if (p.type === 'Fold') {
 			const player = hand.players.find((player) => player.seat === p.seat)!;
-			foldedPlayerIds.push(player.id);
+			const playerId = pokerNowPlayerIdToPlayerId(players, player.id);
+			foldedPlayerIds.push(playerId);
 		} else if (p.type === 'DealBoardCard' || p.type === 'HandFinished') {
 			Object.entries(streetCommittedByPlayerId).forEach(([playerId, value]) => {
 				if (playerId in totalCommittedByPlayerId) {
-					console.log(
-						`  ${playerId} += ${value}  =>  ${totalCommittedByPlayerId[playerId]! + value}`
-					);
 					totalCommittedByPlayerId[playerId]! += value;
 				} else {
-					console.log(`  ${playerId} = ${value}`);
 					totalCommittedByPlayerId[playerId] = value;
 				}
 			});
-			console.log({ streetCommittedByPlayerId });
 			streetCommittedByPlayerId = {};
 		}
 	}
 
-	console.log({ totalCommittedByPlayerId });
-
 	const potContributionCaps = new Set<number>(
 		Object.entries(totalCommittedByPlayerId)
-			.filter(([playerId]) => !foldedPlayerIds.includes(playerId))
+			.filter(([playerId]) => !foldedPlayerIds.includes(parseInt(playerId)))
 			.map(([_, committed]) => committed)
 	);
 	const sortedPotContributionCaps = [...potContributionCaps.values()].sort();
-	console.log({ sortedUniqueCommitments: sortedPotContributionCaps });
 
 	const actionMatrix: ActionMatrix = {};
 	for (let i = 0; i < sortedPotContributionCaps.length; i++) {
@@ -73,7 +65,8 @@ export const computeHandActionMatrix = (hand: Hand): ActionMatrix => {
 			.map((e) => e.payload as CollectEventPayload);
 		const winningPlayerIds = collects.map((c) => {
 			const player = hand.players.find((p) => p.seat === c.seat)!;
-			return player.id;
+			const playerId = pokerNowPlayerIdToPlayerId(players, player.id);
+			return playerId;
 		});
 
 		const previousPotContributionCap = sortedPotContributionCaps[i - 1] ?? 0;
@@ -84,20 +77,16 @@ export const computeHandActionMatrix = (hand: Hand): ActionMatrix => {
 			])
 		);
 
-		console.log(`\n\n===== POT ${i + 1} ===== \n`);
-		console.log({
-			potContributionCap,
-			potContributionsByPlayer,
-			winningPlayerIds
-		});
-
 		Object.entries(potContributionsByPlayer).forEach(([contributedPlayerId, potContribution]) => {
 			const paidToWinners = potContribution / winningPlayerIds.length;
 			if (paidToWinners === 0) return;
 			winningPlayerIds.forEach((winningPlayerId) => {
-				if (winningPlayerId === contributedPlayerId) return;
+				if (winningPlayerId.toString() === contributedPlayerId) return;
 				if (!(contributedPlayerId in actionMatrix)) actionMatrix[contributedPlayerId] = {};
-				actionMatrix[contributedPlayerId]![winningPlayerId] = paidToWinners;
+				actionMatrix[contributedPlayerId]![winningPlayerId] = round(
+					convertStack(paidToWinners, hand.cents),
+					2
+				);
 			});
 		});
 	}

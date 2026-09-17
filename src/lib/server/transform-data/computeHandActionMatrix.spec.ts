@@ -1,6 +1,7 @@
 import { describe, test, expect } from 'vitest';
 import { loadHandsFile } from './loadHandsFile';
 import { computeHandActionMatrix } from './computeHandActionMatrix';
+import { loadPlayersFile } from './loadPlayersFile';
 
 const gameIdToHandsFilePath = (gameId: string) => `./data/poker-now-hands-game-${gameId}.json`;
 
@@ -10,17 +11,17 @@ describe('computeHandActionMatrix', () => {
 			gameId: 'pglEsrF8SW29GXxYE01E0rGMB',
 			handNumber: 40,
 			expectedActionMatrix: {
-				Kv8MwICUbu: { gKkbM5nCAy: 2350, sGFj45LHCA: 837 },
-				'4lRko4mF8A': { gKkbM5nCAy: 200 },
-				sGFj45LHCA: { gKkbM5nCAy: 2350 }
+				7: { 1: 23.5, 2: 8.37 },
+				8: { 1: 2.0 },
+				2: { 1: 23.5 }
 			}
 		},
 		{
 			gameId: 'pgl58oO75jyKcqWgT6e1IOO8V',
 			handNumber: 88,
 			expectedActionMatrix: {
-				iAu0FHpBA1: { Kv8MwICUbu: 1464 },
-				'0ru6KtUj_V': { Kv8MwICUbu: 1464, iAu0FHpBA1: 1917 }
+				3: { 7: 14.64 },
+				2: { 7: 14.64, 3: 19.17 }
 			}
 		}
 	])(
@@ -30,7 +31,8 @@ describe('computeHandActionMatrix', () => {
 			const handsFile = await loadHandsFile(handsFilePath);
 			const hand = handsFile.hands[handNumber - 1];
 			if (!hand) throw new Error(`Expected a hands file to exist at ${handsFilePath}`);
-			const actualActionMatrix = computeHandActionMatrix(hand);
+			const players = await loadPlayersFile();
+			const actualActionMatrix = computeHandActionMatrix(players, hand);
 			expect(actualActionMatrix).toEqual(expectedActionMatrix);
 		}
 	);
