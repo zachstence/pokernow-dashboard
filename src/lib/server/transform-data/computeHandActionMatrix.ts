@@ -1,4 +1,3 @@
-import { argv0 } from 'process';
 import type { CollectEventPayload, Hand } from './loadHandsFile';
 
 export type ActionMatrix = {
@@ -10,6 +9,7 @@ export type ActionMatrix = {
 export const computeHandActionMatrix = (hand: Hand): ActionMatrix => {
 	const totalCommittedByPlayerId: Record<string, number> = {};
 	let streetCommittedByPlayerId: Record<string, number> = {};
+	const foldedPlayerIds: string[] = [];
 
 	for (const event of hand.events) {
 		const p = event.payload;
@@ -34,6 +34,9 @@ export const computeHandActionMatrix = (hand: Hand): ActionMatrix => {
 		} else if (p.type === 'Uncall') {
 			const player = hand.players.find((player) => player.seat === p.seat)!;
 			streetCommittedByPlayerId[player.id]! -= p.value;
+		} else if (p.type === 'Fold') {
+			const player = hand.players.find((player) => player.seat === p.seat)!;
+			foldedPlayerIds.push(player.id);
 		} else if (p.type === 'DealBoardCard' || p.type === 'HandFinished') {
 			Object.entries(streetCommittedByPlayerId).forEach(([playerId, value]) => {
 				if (playerId in totalCommittedByPlayerId) {
@@ -53,16 +56,17 @@ export const computeHandActionMatrix = (hand: Hand): ActionMatrix => {
 
 	console.log({ totalCommittedByPlayerId });
 
-	const uniqueCommitments = new Set<number>(Object.values(totalCommittedByPlayerId));
-	const sortedUniqueCommitments = [...uniqueCommitments.values()].sort();
-	console.log({ sortedUniqueCommitments });
+	const potContributionCaps = new Set<number>(
+		Object.entries(totalCommittedByPlayerId)
+			.filter(([playerId]) => !foldedPlayerIds.includes(playerId))
+			.map(([_, committed]) => committed)
+	);
+	const sortedPotContributionCaps = [...potContributionCaps.values()].sort();
+	console.log({ sortedUniqueCommitments: sortedPotContributionCaps });
 
 	const actionMatrix: ActionMatrix = {};
-	for (let i = 0; i < sortedUniqueCommitments.length; i++) {
-		const commitment = sortedUniqueCommitments[i]!;
-		const committedPlayerIds = Object.entries(totalCommittedByPlayerId)
-			.filter(([_, value]) => value >= commitment)
-			.map(([playerId]) => playerId);
+	for (let i = 0; i < sortedPotContributionCaps.length; i++) {
+		const potContributionCap = sortedPotContributionCaps[i]!;
 
 		const collects = hand.events
 			.filter((e) => e.payload.type === 'Collect' && e.payload.position === i + 1)
@@ -72,20 +76,31 @@ export const computeHandActionMatrix = (hand: Hand): ActionMatrix => {
 			return player.id;
 		});
 
-		const previousCommitment = sortedUniqueCommitments[i - 1] ?? 0;
-		const potCommitment = commitment - previousCommitment;
-		const paidToWinners = potCommitment / winningPlayerIds.length;
+		const previousPotContributionCap = sortedPotContributionCaps[i - 1] ?? 0;
+		const potContributionsByPlayer = Object.fromEntries(
+			Object.entries(totalCommittedByPlayerId).map(([playerId, contribution]) => [
+				playerId,
+				Math.max(0, Math.min(contribution, potContributionCap) - previousPotContributionCap)
+			])
+		);
 
-		committedPlayerIds.forEach((committedPlayerId) => {
+		console.log(`\n\n===== POT ${i + 1} ===== \n`);
+		console.log({
+			potContributionCap,
+			potContributionsByPlayer,
+			winningPlayerIds
+		});
+
+		Object.entries(potContributionsByPlayer).forEach(([contributedPlayerId, potContribution]) => {
+			const paidToWinners = potContribution / winningPlayerIds.length;
+			if (paidToWinners === 0) return;
 			winningPlayerIds.forEach((winningPlayerId) => {
-				if (winningPlayerId === committedPlayerId) return;
-				if (!(committedPlayerId in actionMatrix)) actionMatrix[committedPlayerId] = {};
-				actionMatrix[committedPlayerId]![winningPlayerId] = paidToWinners;
+				if (winningPlayerId === contributedPlayerId) return;
+				if (!(contributedPlayerId in actionMatrix)) actionMatrix[contributedPlayerId] = {};
+				actionMatrix[contributedPlayerId]![winningPlayerId] = paidToWinners;
 			});
 		});
 	}
 
-	console.log(actionMatrix);
-
-	return {};
+	return actionMatrix;
 };

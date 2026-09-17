@@ -96,9 +96,11 @@ export const computeStats = async (): Promise<Stats> => {
 		}
 	}
 
-	const testHandsFile = handsFiles[2]!;
+	// const testHandsFile = handsFiles[2]!;
+	// const testHand = testHandsFile.hands[87]!;
+	const testHandsFile = handsFiles[3]!;
+	const testHand = testHandsFile.hands[39]!;
 	console.log('Game ID', testHandsFile?.gameId);
-	const testHand = testHandsFile.hands[87]!;
 	console.log('Hand Number', testHand.number);
 	const actionMatrix = computeHandActionMatrix(testHand);
 	console.log({ actionMatrix });
